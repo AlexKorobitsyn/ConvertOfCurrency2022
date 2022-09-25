@@ -32,7 +32,25 @@ public class InputSystem {
                 break;
             }
             if(cancelStr.compareTo("\\help")==0){
-                System.out.println("There will be \"help\"!");
+                System.out.println("help:\n" +
+                        "Description:\n" +
+                        "\tCurrency conversion. The simplest calculations in different currencies.\n" +
+                        "Options:\n" +
+                        "\tQuantityOfCurrency = QOC\n" +
+                        "\tNameOfCurrency = NOC\n" +
+                        "\tAnswer - Double variable\n" +
+                        "\n" +
+                        "\tQOC <= 2147483647\n" +
+                        "\t-1.7 * 10^308 <= Answer <= 1.7 * 10^308\t\n" +
+                        "\tNOC: USD, RUB, EUR\n" +
+                        "\t\n" +
+                        "Examples:\n" +
+                        "\tIN: QOC NOC + QOC NOC + ... + QOC NOC IN NOC\n" +
+                        "\tOUT: Answer\n" +
+                        "\t\n" +
+                        "\tIN: 10 USD + 5 EUR in RUB\n" +
+                        "\tOUT: 820.62 RUB");
+
                 continue;
             }
             if(audi == null) {
