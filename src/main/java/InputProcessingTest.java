@@ -1,3 +1,4 @@
+/*
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,4 +18,4 @@ class InputProcessingTest {
         InputProcessing test3 = new InputProcessing(arr3,10);
         assertEquals("0,000 RUB", test3.Process());
     }
-}
+}*/

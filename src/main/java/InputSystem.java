@@ -18,10 +18,13 @@ public class InputSystem {
         }
         return dict;
     }
-    public static void MainInput(){
+    public static void MainInput() throws Exception {
         Scanner inStr = new Scanner(System.in);
         String[] arrOfWord ;
         String audi = "";
+        HashMap<String,Double> ParseValut = new HashMap<>();
+        String[] alphabet ={"USD","EUR","RUB"};
+        ParseValut =InputSystem.TakeADictionaryOfCurrency(alphabet);
         String cancelStr;
         while(true) {
             // обработаем пробел и как?
@@ -60,20 +63,10 @@ public class InputSystem {
             else {
                 audi = audi.replaceAll("\s+", " ");
                 arrOfWord = audi.split(" ");
-                for (int i = 0; i < arrOfWord.length; i++) {
-                      System.out.println(arrOfWord[i]);
-                  }
+                InputProcessing worker = new InputProcessing(arrOfWord, arrOfWord.length, ParseValut);
+                worker.Process();
             }
 
         }
-    }
-    public static void main(String[] args) throws Exception {
-            //String encoding = System.getProperty("console.encoding", "utf-8");??
-        String[] alphabet ={"USD","EUR","RUB"};
-        HashMap<String,Double> aezak = new HashMap<>();
-        aezak =TakeADictionaryOfCurrency(alphabet);
-        System.out.println(aezak.keySet());
-        System.out.println(aezak.values());
-        MainInput();
     }
 }

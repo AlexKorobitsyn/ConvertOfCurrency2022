@@ -4,22 +4,21 @@ public class InputProcessing {
 
     private static String[] rawArray;
     private static int rawArraySize;
+    private static HashMap<String, Double> ParseValut;
 
-    public InputProcessing(String[] rawArray, int rawArraySize) {
+    public InputProcessing(String[] rawArray, int rawArraySize, HashMap<String,Double> ParseValut) {
         this.rawArray = rawArray;
         this.rawArraySize = rawArraySize;
+        this.ParseValut = ParseValut;
     }
 
     public static Double DivideValut(String InValut, String OutValut, HashMap<String, Double> ParseValut) {
         return ParseValut.get(InValut) / ParseValut.get(OutValut);
     }
 
-    public static String Process() {
+    public static String Process() throws Exception {
 
-        HashMap<String,Double> ParseValut = new HashMap<>();
-        ParseValut.put("USD", 55.50);
-        ParseValut.put("EUR", 53.124);
-        ParseValut.put("RUB", 1.0);
+
 
         HashMap<String,Double> FinalDic = new HashMap<>(); //создание словаря
         String FinalValut = rawArray[rawArraySize - 1]; //Итоговая валюта
