@@ -16,6 +16,14 @@ public class InputProcessing {
         return ParseValut.get(InValut) / ParseValut.get(OutValut);
     }
 
+    public static Double ActWithSelectSign (Double a, Double b, String sign) {
+        if (sign == "+"){
+            return (a + b);
+        }
+        else  {
+            return (a - b);
+        }
+    }
     public static String Process() throws Exception {
 
 
@@ -25,16 +33,19 @@ public class InputProcessing {
         for (int i = 1; i < rawArraySize - 1; i+=3){ // идем только по валютам
             String key = rawArray[i]; //валюта
             Double value = Double.parseDouble((rawArray[i-1])); // значение
-
+            String sign = "+"; //знак по умолчанию +
+            if (i != 1){ // узнаем знак для каждого значения
+                sign = rawArray[i - 2];
+            }
             if (FinalDic.containsKey(rawArray[i])){ //если валюта уже есть в словаре
-                FinalDic.put(key, FinalDic.get(key) + value);
+                FinalDic.put(key, ActWithSelectSign(FinalDic.get(key), value, sign));
             }
             else {
-                FinalDic.put(key, value);
+                FinalDic.put(key, ActWithSelectSign(0.0, value, sign));
             }
         }
-        double counter = 0.0;
-        String result = "";
+        double counter = 0.0; //переменная для подсчета итоговой суммы
+        String result = ""; //строка для формирования результата
         for (String key : FinalDic.keySet()){
             counter += FinalDic.get(key) * DivideValut(key, FinalValut, ParseValut);
         }
