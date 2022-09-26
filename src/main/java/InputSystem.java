@@ -28,7 +28,7 @@ public class InputSystem {
         String cancelStr;
         while(true) {
             // обработаем пробел и как?
-            audi = inStr.findInLine("((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB)");
+            audi = inStr.findInLine("(((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))|((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))");
             cancelStr = inStr.nextLine();
             if(cancelStr.compareTo("\\exit")==0){
                 System.out.println("Exit.");
