@@ -4,19 +4,19 @@ public class InputProcessing {
 
     private static String[] rawArray;
     private static int rawArraySize;
-    private static HashMap<String, Double> ParseValut;
+    private static HashMap<String, Double> parseValut;
 
-    public InputProcessing(String[] rawArray, int rawArraySize, HashMap<String,Double> ParseValut) {
+    public InputProcessing(String[] rawArray, int rawArraySize, HashMap<String,Double> parseValut) {
         this.rawArray = rawArray;
         this.rawArraySize = rawArraySize;
-        this.ParseValut = ParseValut;
+        this.parseValut = parseValut;
     }
 
-    public static Double DivideValut(String InValut, String OutValut, HashMap<String, Double> ParseValut) {
-        return ParseValut.get(InValut) / ParseValut.get(OutValut);
+    public static Double divideValut(String inValut, String outValut, HashMap<String, Double> parseValut) {
+        return parseValut.get(inValut) / parseValut.get(outValut);
     }
 
-    public static Double ActWithSelectSign (Double a, Double b, String sign) {
+    public static Double actWithSelectSign (Double a, Double b, String sign) {
         if (sign == "+"){
             return (a + b);
         }
@@ -24,12 +24,12 @@ public class InputProcessing {
             return (a - b);
         }
     }
-    public static String Process() throws Exception {
+    public static String process() throws Exception {
 
 
 
-        HashMap<String,Double> FinalDic = new HashMap<>(); //создание словаря
-        String FinalValut = rawArray[rawArraySize - 1]; //Итоговая валюта
+        HashMap<String,Double> finalDic = new HashMap<>(); //создание словаря
+        String finalValut = rawArray[rawArraySize - 1]; //Итоговая валюта
         for (int i = 1; i < rawArraySize - 1; i+=3){ // идем только по валютам
             String key = rawArray[i]; //валюта
             Double value = Double.parseDouble((rawArray[i-1])); // значение
@@ -37,19 +37,19 @@ public class InputProcessing {
             if (i != 1){ // узнаем знак для каждого значения
                 sign = rawArray[i - 2];
             }
-            if (FinalDic.containsKey(rawArray[i])){ //если валюта уже есть в словаре
-                FinalDic.put(key, ActWithSelectSign(FinalDic.get(key), value, sign));
+            if (finalDic.containsKey(rawArray[i])){ //если валюта уже есть в словаре
+                finalDic.put(key, actWithSelectSign(finalDic.get(key), value, sign));
             }
             else {
-                FinalDic.put(key, ActWithSelectSign(0.0, value, sign));
+                finalDic.put(key, actWithSelectSign(0.0, value, sign));
             }
         }
         double counter = 0.0; //переменная для подсчета итоговой суммы
         String result = ""; //строка для формирования результата
-        for (String key : FinalDic.keySet()){
-            counter += FinalDic.get(key) * DivideValut(key, FinalValut, ParseValut);
+        for (String key : finalDic.keySet()){
+            counter += finalDic.get(key) * divideValut(key, finalValut, parseValut);
         }
-        result += String.format("%.3f", counter) + " " + FinalValut;
+        result += String.format("%.3f", counter) + " " + finalValut;
         System.out.println(result);
         return result;
     }

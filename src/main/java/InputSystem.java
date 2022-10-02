@@ -5,10 +5,10 @@ import java.util.HashMap;
 
 public class InputSystem {
     //10 USD + 5 EUR + 100 USD in USD
-    public static HashMap<String, Double> TakeADictionaryOfCurrency(String[] allKey)//создание Dictionary с курсом валют
+    public static HashMap<String, Double> takeADictionaryOfCurrency(String[] allKey)//создание Dictionary с курсом валют
             throws Exception {
         Parser parserObject1 = new Parser();
-        String value = parserObject1.ParseTheTable();
+        String value = parserObject1.parseTheTable();
         HashMap<String, Double> dict = new HashMap();
         for(int i =0;i< allKey.length;i++) {
             if(allKey[i]=="RUB")dict.put("RUB", 1.0);
@@ -18,13 +18,13 @@ public class InputSystem {
         }
         return dict;
     }
-    public static void MainInput() throws Exception {
+    public static void mainInput() throws Exception {
         Scanner inStr = new Scanner(System.in);
         String[] arrOfWord ;
         String audi = "";
-        HashMap<String,Double> ParseValut = new HashMap<>();
+        HashMap<String,Double> parseValut = new HashMap<>();
         String[] alphabet ={"USD","EUR","RUB"};
-        ParseValut =InputSystem.TakeADictionaryOfCurrency(alphabet);
+        parseValut =InputSystem.takeADictionaryOfCurrency(alphabet);
         String cancelStr;
         while(true) {
             // обработаем пробел и как?
@@ -63,8 +63,8 @@ public class InputSystem {
             else {
                 audi = audi.replaceAll("\s+", " ");
                 arrOfWord = audi.split(" ");
-                InputProcessing worker = new InputProcessing(arrOfWord, arrOfWord.length, ParseValut);
-                worker.Process();
+                InputProcessing worker = new InputProcessing(arrOfWord, arrOfWord.length, parseValut);
+                worker.process();
             }
 
         }

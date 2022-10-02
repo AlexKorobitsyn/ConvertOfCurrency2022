@@ -1,8 +1,6 @@
-import java.util.HashMap;
-
-public class main {
+public class Main {
     public static void main(String[] args) throws Exception {
         //String encoding = System.getProperty("console.encoding", "utf-8");??
-        InputSystem.MainInput();
+        InputSystem.mainInput();
     }
 }

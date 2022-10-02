@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Parser {
-    public static String ParseTheTable() throws IOException{//разбивает сайт на одну строку со всеми значениями валют
+    public static String parseTheTable() throws IOException{//разбивает сайт на одну строку со всеми значениями валют
         HashMap<String, Double> allCurrency = new HashMap<>();
         String url ="https://www.cbr.ru/currency_base/daily/";
         Document page = Jsoup.parse(new URL(url), 3000);
