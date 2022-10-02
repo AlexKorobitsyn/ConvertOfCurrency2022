@@ -1,15 +1,10 @@
 import java.util.HashMap;
 
 public class InputProcessing {
+    private static Convert convert;
 
-    private static String[] rawArray;
-    private static int rawArraySize;
-    private static HashMap<String, Double> parseValut;
-
-    public InputProcessing(String[] rawArray, int rawArraySize, HashMap<String,Double> parseValut) {
-        this.rawArray = rawArray;
-        this.rawArraySize = rawArraySize;
-        this.parseValut = parseValut;
+    public InputProcessing(Convert convert) {
+        this.convert = convert;
     }
 
     public static Double divideValut(String inValut, String outValut, HashMap<String, Double> parseValut) {
@@ -24,12 +19,10 @@ public class InputProcessing {
             return (a - b);
         }
     }
-    public static String process() throws Exception {
-
-
+    public static String process(String[] rawArray, int rawArraySize) throws Exception {
 
         HashMap<String,Double> finalDic = new HashMap<>(); //создание словаря
-        String finalValut = rawArray[rawArraySize - 1]; //Итоговая валюта
+        String finalCurrency = rawArray[rawArraySize - 1]; //Итоговая валюта
         for (int i = 1; i < rawArraySize - 1; i+=3){ // идем только по валютам
             String key = rawArray[i]; //валюта
             Double value = Double.parseDouble((rawArray[i-1])); // значение
@@ -47,9 +40,9 @@ public class InputProcessing {
         double counter = 0.0; //переменная для подсчета итоговой суммы
         String result = ""; //строка для формирования результата
         for (String key : finalDic.keySet()){
-            counter += finalDic.get(key) * divideValut(key, finalValut, parseValut);
+            counter += convert.convertation(key, finalCurrency, finalDic.get(key));
         }
-        result += String.format("%.3f", counter) + " " + finalValut;
+        result += String.format("%.3f", counter) + " " + finalCurrency;
         System.out.println(result);
         return result;
     }

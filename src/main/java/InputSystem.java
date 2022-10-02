@@ -63,10 +63,10 @@ public class InputSystem {
             else {
                 audi = audi.replaceAll("\s+", " ");
                 arrOfWord = audi.split(" ");
-                InputProcessing worker = new InputProcessing(arrOfWord, arrOfWord.length, parseValut);
-                worker.process();
+                Convert mainConvert = new Convert(parseValut);
+                InputProcessing worker = new InputProcessing(mainConvert);
+                worker.process(arrOfWord, arrOfWord.length);
             }
-
         }
     }
 }
