@@ -13,9 +13,9 @@ public class Parser {
     private static String parseTheTable() throws IOException{//разбивает сайт на одну строку со всеми значениями валют
         HashMap<String, Double> allCurrency = new HashMap<>();
         String url ="https://www.cbr.ru/currency_base/daily/";
-        Document page = Jsoup.parse(new URL(url), 3000);
-        Element tableFirst = page.select("table[class=data]").first();
-        Elements names = tableFirst.select("td");
+        Document page = Jsoup.parse(new URL(url), 3000);//вытаскиваем всю страницу
+        Element tableFirst = page.select("table[class=data]").first();//первая выборка
+        Elements names = tableFirst.select("td");//вторая выборка
         String value = names.text();
         return value;
     }
@@ -23,11 +23,11 @@ public class Parser {
         Pattern pattern2 = Pattern.compile("\\d+,\\d+");//ищет значение в рублях
         Pattern pattern1 = Pattern.compile(currency+"\\s+\\d+\\D+\\d+,\\d+");//паттерн - для поиска инфы в тексте шаблон всё об одной валюте
         Matcher matcher = pattern1.matcher(value);
-        if (matcher.find()) {
+        if (matcher.find()) { //Первое сравнение с регуляркой
             String tmp = matcher.group();
             Matcher matcher1 = pattern2.matcher(tmp);
 
-            if (matcher1.find()) {
+            if (matcher1.find()) { //Второе сравнение с регуляркой
                 return matcher1.group();
             }
         }
@@ -39,8 +39,8 @@ public class Parser {
         String value = parserObject1.parseTheTable();
         HashMap<String, Double> dict = new HashMap();
         for(int i =0;i< allKey.length;i++) {
-            if(allKey[i]=="RUB")dict.put("RUB", 1.0);
-            else {
+            if(allKey[i]=="RUB")dict.put("RUB", 1.0); // добавили только rub
+            else { //добавление и остальных валют
                 dict.put(allKey[i], Double.parseDouble(parserObject1.findInBigStr(value, allKey[i]).replaceAll(",",".")));
             }
         }

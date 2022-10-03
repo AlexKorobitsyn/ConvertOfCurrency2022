@@ -8,10 +8,6 @@ public class InputProcessing {
         this.convert = convert;
     }
 
-    public static Double divideValut(String inCurrency, String outCurrency, HashMap<String, Double> parseCurrency) {
-        return parseCurrency.get(inCurrency) / parseCurrency.get(outCurrency);
-    }
-
     public static Double actWithSelectSign (Double a, Double b, String sign) {
         if (Objects.equals(sign, "+")){
             return (a + b);

@@ -5,23 +5,22 @@ import java.util.HashMap;
 
 public class InputSystem {
     //10 USD + 5 EUR + 100 USD in USD
-    public static void mainInput() throws Exception {
+    public static void mainInput() throws Exception {//метод занимается входными данными
         Scanner inStr = new Scanner(System.in);
         String[] arrOfWord ;
-        String resOfRegex = "";
+        String resOfRegex = "";//с помощью регулярки отсеивает ошибочные строки
         HashMap<String,Double> parseValut = new HashMap<>();
         String[] alphabet ={"USD","EUR","RUB"};
-        parseValut =Parser.takeADictionaryOfCurrency(alphabet);
+        parseValut =Parser.takeADictionaryOfCurrency(alphabet);//создаёт словарь с валютой и её значением в рублях
         String cancelStr;
         while(true) {
-            // обработаем пробел и как?
             resOfRegex = inStr.findInLine("(((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))|((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))");
             cancelStr = inStr.nextLine();
-            if(cancelStr.compareTo("\\exit")==0){
+            if(cancelStr.compareTo("\\exit")==0){ //если написали выход
                 System.out.println("Exit.");
                 break;
             }
-            if(cancelStr.compareTo("\\help")==0){
+            if(cancelStr.compareTo("\\help")==0){//help
                 System.out.println("help:\n" +
                         "Description:\n" +
                         "\tCurrency conversion. The simplest calculations in different currencies.\n" +
@@ -43,16 +42,16 @@ public class InputSystem {
 
                 continue;
             }
-            if(resOfRegex == null) {
+            if(resOfRegex == null) { //Если строка неправильного формата - ошибка
                 System.out.println("Thats Error!!!");
                 break;
             }
             else {
-                resOfRegex = resOfRegex.replaceAll("\s+", " ");
-                arrOfWord = resOfRegex.split(" ");
-                Convert mainConvert = new Convert(parseValut);
+                resOfRegex = resOfRegex.replaceAll("\s+", " ");//можно ставить хоть сколько пробелов
+                arrOfWord = resOfRegex.split(" ");//разбить на массив
+                Convert mainConvert = new Convert(parseValut);//создание класса для подсчёта
                 InputProcessing worker = new InputProcessing(mainConvert);
-                worker.process(arrOfWord, arrOfWord.length);
+                worker.process(arrOfWord, arrOfWord.length);//основной подсчёт
             }
         }
     }
