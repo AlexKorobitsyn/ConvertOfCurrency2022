@@ -7,7 +7,7 @@ class InputProcessingTest {
 
     @org.junit.jupiter.api.Test
     void TestProcessMethod() {
-        Convert convert a = new Convert({RUB:1,USD:55,EUR:43})
+        Convert convert a = new Convert({"RUB":1,"USD":55,"EUR":43})
         InputProcessing test(a);
         assertEquals(test.process(Arr,Size))
 
@@ -24,4 +24,5 @@ class InputProcessingTest {
         assertEquals("0,000 RUB", test3.Process());
     }
 }
+
 */

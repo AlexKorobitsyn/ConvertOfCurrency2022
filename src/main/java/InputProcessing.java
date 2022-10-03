@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Objects;
 
 public class InputProcessing {
     private static Convert convert;
@@ -7,12 +8,12 @@ public class InputProcessing {
         this.convert = convert;
     }
 
-    public static Double divideValut(String inValut, String outValut, HashMap<String, Double> parseValut) {
-        return parseValut.get(inValut) / parseValut.get(outValut);
+    public static Double divideValut(String inCurrency, String outCurrency, HashMap<String, Double> parseCurrency) {
+        return parseCurrency.get(inCurrency) / parseCurrency.get(outCurrency);
     }
 
     public static Double actWithSelectSign (Double a, Double b, String sign) {
-        if (sign == "+"){
+        if (Objects.equals(sign, "+")){
             return (a + b);
         }
         else  {

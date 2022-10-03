@@ -5,30 +5,17 @@ import java.util.HashMap;
 
 public class InputSystem {
     //10 USD + 5 EUR + 100 USD in USD
-    public static HashMap<String, Double> takeADictionaryOfCurrency(String[] allKey)//создание Dictionary с курсом валют
-            throws Exception {
-        Parser parserObject1 = new Parser();
-        String value = parserObject1.parseTheTable();
-        HashMap<String, Double> dict = new HashMap();
-        for(int i =0;i< allKey.length;i++) {
-            if(allKey[i]=="RUB")dict.put("RUB", 1.0);
-            else {
-                dict.put(allKey[i], Double.parseDouble(parserObject1.findInBigStr(value, allKey[i]).replaceAll(",",".")));
-            }
-        }
-        return dict;
-    }
     public static void mainInput() throws Exception {
         Scanner inStr = new Scanner(System.in);
         String[] arrOfWord ;
-        String audi = "";
+        String resOfRegex = "";
         HashMap<String,Double> parseValut = new HashMap<>();
         String[] alphabet ={"USD","EUR","RUB"};
-        parseValut =InputSystem.takeADictionaryOfCurrency(alphabet);
+        parseValut =Parser.takeADictionaryOfCurrency(alphabet);
         String cancelStr;
         while(true) {
             // обработаем пробел и как?
-            audi = inStr.findInLine("(((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))|((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))");
+            resOfRegex = inStr.findInLine("(((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))|((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))");
             cancelStr = inStr.nextLine();
             if(cancelStr.compareTo("\\exit")==0){
                 System.out.println("Exit.");
@@ -56,13 +43,13 @@ public class InputSystem {
 
                 continue;
             }
-            if(audi == null) {
+            if(resOfRegex == null) {
                 System.out.println("Thats Error!!!");
                 break;
             }
             else {
-                audi = audi.replaceAll("\s+", " ");
-                arrOfWord = audi.split(" ");
+                resOfRegex = resOfRegex.replaceAll("\s+", " ");
+                arrOfWord = resOfRegex.split(" ");
                 Convert mainConvert = new Convert(parseValut);
                 InputProcessing worker = new InputProcessing(mainConvert);
                 worker.process(arrOfWord, arrOfWord.length);
