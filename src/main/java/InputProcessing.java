@@ -3,11 +3,16 @@ import java.util.Objects;
 
 public class InputProcessing {
     private Convert convert;
+    private String finalCurrency;
 
     public InputProcessing(Convert convert) {
         this.convert = convert;
     }
 
+    public String getFinalCurrency()
+    {
+        return finalCurrency;
+    }
     private Double actWithSelectSign (Double a, Double b, String sign) {
         if (Objects.equals(sign, "+")){
             return (a + b);
@@ -16,10 +21,10 @@ public class InputProcessing {
             return (a - b);
         }
     }
-    public void process(String[] rawArray, int rawArraySize) throws Exception {
+    public double process(String[] rawArray, int rawArraySize) throws Exception {
 
         HashMap<String,Double> finalDic = new HashMap<>(); //создание словаря
-        String finalCurrency = rawArray[rawArraySize - 1]; //Итоговая валюта
+        finalCurrency = rawArray[rawArraySize - 1]; //Итоговая валюта
         for (int i = 1; i < rawArraySize - 1; i+=3){ // идем только по валютам
             String key = rawArray[i]; //валюта
             Double value = Double.parseDouble((rawArray[i-1])); // значение
@@ -38,7 +43,6 @@ public class InputProcessing {
         for (String key : finalDic.keySet()){
             counter += convert.convertation(key, finalCurrency, finalDic.get(key));
         }
-        Interface out = new Interface();
-        out.output(counter, finalCurrency);
+        return counter;
     }
 }
