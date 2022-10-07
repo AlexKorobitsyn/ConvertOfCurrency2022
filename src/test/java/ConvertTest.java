@@ -1,3 +1,4 @@
+/*
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,4 +15,4 @@ class ConvertTest {
         assertEquals(2000.0, Convert.convertation("RUB","RUB", 2000.0));
         assertEquals(22500,Convert.convertation("USD","RUB", 450.0));
     }
-}
+}*/

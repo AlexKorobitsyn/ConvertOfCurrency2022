@@ -5,13 +5,14 @@ import java.util.HashMap;
 
 public class InputSystem {
     //10 USD + 5 EUR + 100 USD in USD
-    public static void mainInput() throws Exception {//метод занимается входными данными
+    public void mainInput() throws Exception {//метод занимается входными данными
         Scanner inStr = new Scanner(System.in);
         String[] arrOfWord ;
         String resOfRegex = "";//с помощью регулярки отсеивает ошибочные строки
         HashMap<String,Double> parseValut = new HashMap<>();
         String[] alphabet ={"USD","EUR","RUB"};
-        parseValut =Parser.takeADictionaryOfCurrency(alphabet);//создаёт словарь с валютой и её значением в рублях
+        Parser mainParser = new Parser();
+        parseValut =mainParser.takeADictionaryOfCurrency(alphabet);//создаёт словарь с валютой и её значением в рублях
         String cancelStr;
         while(true) {
             resOfRegex = inStr.findInLine("(((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))|((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))");

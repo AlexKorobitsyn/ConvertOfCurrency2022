@@ -2,13 +2,13 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class InputProcessing {
-    private static Convert convert;
+    private Convert convert;
 
     public InputProcessing(Convert convert) {
         this.convert = convert;
     }
 
-    public static Double actWithSelectSign (Double a, Double b, String sign) {
+    private Double actWithSelectSign (Double a, Double b, String sign) {
         if (Objects.equals(sign, "+")){
             return (a + b);
         }
@@ -16,7 +16,7 @@ public class InputProcessing {
             return (a - b);
         }
     }
-    public static String process(String[] rawArray, int rawArraySize) throws Exception {
+    public String process(String[] rawArray, int rawArraySize) throws Exception {
 
         HashMap<String,Double> finalDic = new HashMap<>(); //создание словаря
         String finalCurrency = rawArray[rawArraySize - 1]; //Итоговая валюта

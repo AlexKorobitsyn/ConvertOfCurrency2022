@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Parser {
-    private static String parseTheTable() throws IOException{//разбивает сайт на одну строку со всеми значениями валют
+    private String parseTheTable() throws IOException{//разбивает сайт на одну строку со всеми значениями валют
         HashMap<String, Double> allCurrency = new HashMap<>();
         String url ="https://www.cbr.ru/currency_base/daily/";
         Document page = Jsoup.parse(new URL(url), 3000);//вытаскиваем всю страницу
@@ -19,7 +19,7 @@ public class Parser {
         String value = names.text();
         return value;
     }
-    private static String findInBigStr(String value, String currency) throws Exception {//Ищет определённую валюсту во всей строке
+    private String findInBigStr(String value, String currency) throws Exception {//Ищет определённую валюсту во всей строке
         Pattern pattern2 = Pattern.compile("\\d+,\\d+");//ищет значение в рублях
         Pattern pattern1 = Pattern.compile(currency+"\\s+\\d+\\D+\\d+,\\d+");//паттерн - для поиска инфы в тексте шаблон всё об одной валюте
         Matcher matcher = pattern1.matcher(value);
@@ -33,7 +33,7 @@ public class Parser {
         }
         throw new Exception("Can't find this currency");
     }
-    public static HashMap<String, Double> takeADictionaryOfCurrency(String[] allKey)//создание Dictionary с курсом валют
+    public HashMap<String, Double> takeADictionaryOfCurrency(String[] allKey)//создание Dictionary с курсом валют
             throws Exception {
         Parser parserObject1 = new Parser();
         String value = parserObject1.parseTheTable();
