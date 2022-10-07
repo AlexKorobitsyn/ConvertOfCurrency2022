@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        InputSystem input = new InputSystem();
-        input.mainInput();
+        Interface in = new Interface();
+        in.input();
     }
 }

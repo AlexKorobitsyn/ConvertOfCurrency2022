@@ -16,7 +16,7 @@ public class InputProcessing {
             return (a - b);
         }
     }
-    public String process(String[] rawArray, int rawArraySize) throws Exception {
+    public void process(String[] rawArray, int rawArraySize) throws Exception {
 
         HashMap<String,Double> finalDic = new HashMap<>(); //создание словаря
         String finalCurrency = rawArray[rawArraySize - 1]; //Итоговая валюта
@@ -35,12 +35,10 @@ public class InputProcessing {
             }
         }
         double counter = 0.0; //переменная для подсчета итоговой суммы
-        String result = ""; //строка для формирования результата
         for (String key : finalDic.keySet()){
             counter += convert.convertation(key, finalCurrency, finalDic.get(key));
         }
-        result += String.format("%.3f", counter) + " " + finalCurrency;
-        System.out.println(result);
-        return result;
+        Interface out = new Interface();
+        out.output(counter, finalCurrency);
     }
 }
