@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 public class Convert {
 
-    private HashMap<String,Double> dictOfCurrencyAndRate;
+    private final HashMap<String,Double> dictOfCurrencyAndRate;
 
     public Convert(HashMap<String,Double> dictOfCurrencyAndRate){
         this.dictOfCurrencyAndRate = dictOfCurrencyAndRate;

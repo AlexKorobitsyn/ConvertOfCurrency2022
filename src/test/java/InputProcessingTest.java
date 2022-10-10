@@ -1,10 +1,8 @@
-/*
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class InputProcessingTest {
-
     @org.junit.jupiter.api.Test
     void testProcessMethod() throws Exception {
         HashMap<String,Double> testDict1 = new HashMap<>();
@@ -15,7 +13,7 @@ class InputProcessingTest {
         String[] array1 = {"10", "EUR", "+", "4", "USD", "-", "240", "RUB", "in", "RUB"};
         InputProcessing test1 = new InputProcessing(convert1);
 
-        assertEquals("410,000 RUB", test1.process(array1,array1.length));
+        assertEquals(410.0, test1.process(array1,array1.length));
 
         HashMap<String,Double> testDict2 = new HashMap<>();
         testDict2.put("RUB", 1.0);
@@ -25,7 +23,7 @@ class InputProcessingTest {
         String[] array2 = {"10", "EUR", "in", "RUB"};
         InputProcessing test2 = new InputProcessing(convert2);
 
-        assertEquals( "300,000 RUB", test2.process(array2,array2.length));
+        assertEquals( 300.0, test2.process(array2,array2.length));
 
         HashMap<String,Double> testDict3 = new HashMap<>();
         testDict3.put("RUB", 1.0);
@@ -35,7 +33,6 @@ class InputProcessingTest {
         String[] array3 = {"10", "EUR", "-", "10", "EUR", "in", "USD"};
         InputProcessing test3 = new InputProcessing(convert3);
 
-        assertEquals("0,000 USD", test3.process(array3,array3.length));
+        assertEquals(0.0, test3.process(array3,array3.length));
     }
 }
-*/
