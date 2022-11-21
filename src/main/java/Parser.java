@@ -19,6 +19,7 @@ public class Parser {
         String value = names.text();
         return value;
     }
+
     private String findInBigStr(String value, String currency) throws Exception {//Ищет определённую валюсту во всей строке
         Pattern pattern2 = Pattern.compile("\\d+,\\d+");//ищет значение в рублях
         Pattern pattern1 = Pattern.compile(currency+"\\s+\\d+\\D+\\d+,\\d+");//паттерн - для поиска инфы в тексте шаблон всё об одной валюте
