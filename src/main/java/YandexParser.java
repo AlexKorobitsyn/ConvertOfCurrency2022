@@ -13,10 +13,10 @@ public class YandexParser {
 
     public YandexParser() throws IOException {
     }
-    static private Path path = Paths.get("src\\main\\resources\\keys.txt");
+    static private final Path path = Paths.get("src\\main\\resources\\keys.txt");
 
     private String text;
-    private String APIKey = Files.readString(path);// Безопасность ключа.
+    private final String APIKey = Files.readString(path);// Безопасность ключа.
     private int results = 500;
 
     private String GiveSecretKey()//придётся сохранять готовую модель ссылки с ключом
