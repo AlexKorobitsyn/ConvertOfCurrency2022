@@ -4,6 +4,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.IOException;
@@ -14,8 +16,16 @@ import java.util.Objects;
 public class BanksParser {
     private final HashMap<String, String> bank_and_related_url; // Словарь {Банк: URL}
     private final String[] alphabet; // Массив валют
-    public BanksParser(HashMap<String, String> bank_and_related_url, String[] alphabet) {
-        this.bank_and_related_url = bank_and_related_url;
+    public BanksParser(String[] alphabet) {
+        bank_and_related_url = new HashMap<>();
+        bank_and_related_url.put("СберБанк", "https://ru.myfin.by/bank/sberbank/currency");
+        bank_and_related_url.put("ВТБ", "https://ru.myfin.by/bank/vtb/currency");
+        bank_and_related_url.put("Альфа-Банк", "https://ru.myfin.by/bank/alfabank/currency");
+        bank_and_related_url.put("Газпромбанк", "https://ru.myfin.by/bank/gazprombank/currency");
+        bank_and_related_url.put("Россельхозбанк", "https://ru.myfin.by/bank/rshb/currency");
+        bank_and_related_url.put("Московский кредитный банк", "https://ru.myfin.by/bank/mkb/currency");
+        bank_and_related_url.put("Банк Открытие", "https://ru.myfin.by/bank/otkritie/currency");
+        bank_and_related_url.put("МТС банк", "https://ru.myfin.by/bank/mts-bank/currency");
         this.alphabet = alphabet;
     }
 
@@ -24,7 +34,7 @@ public class BanksParser {
         return Jsoup.parse(new URL(url), 3000);
     }
 
-    public HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_their_exchange_rates(String[] banks) throws IOException {
+    public HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_their_exchange_rates(Set<String> banks) throws IOException {
         HashMap<String, HashMap<String, HashMap<String, Double>>> result_dict = new HashMap<>();
         for (String bank: banks) {
             if (bank_and_related_url.containsKey(bank)){
@@ -56,5 +66,28 @@ public class BanksParser {
             dict_with_currency_and_values.put(currency, dict_for_sell_and_buy_value);
         }
         return dict_with_currency_and_values;
+    }
+
+    public static String make_str_for_output(HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_currencies){
+        String result = "";
+        Set<String> banks = banks_with_currencies.keySet();
+        for (String bank : banks){
+            result += bank + '\n';
+            Set<String> currencies = banks_with_currencies.get(bank).keySet();
+            for (String currency : currencies) {
+                if (currency.equals("Рубль")) {
+                    continue;
+                }
+                result += currency + ": ";
+                HashMap<String, Double> types_with_values = banks_with_currencies.get(bank).get(currency);
+                for (String type : types_with_values.keySet()){
+                    result += type + ": " + types_with_values.get(type) + " ";
+                }
+                result += "\n";
+            }
+            result += "\n\n";
+        }
+
+        return result;
     }
 }

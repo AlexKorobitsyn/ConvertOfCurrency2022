@@ -1,6 +1,7 @@
 package BestCurrencyExchangerBot.service;
 
 import Parsers.YandexParser;
+import Parsers.BanksParser;
 import BestCurrencyExchangerBot.config.BotConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.parser.ParseException;
@@ -16,17 +17,20 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
+    final BotConfig config;
+    final String[] alphabet = {"Евро", "Доллар", "Рубль"};
     String town = "";
     Set<String> banks = null;
+    HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_currencies;
     String mainBank = "";
     int step = 1;
-    final BotConfig config;
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -44,10 +48,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        YandexParser yaParser = null;
-
         try {
-            yaParser = new YandexParser();
+            YandexParser yaParser = new YandexParser();
+            BanksParser bankParser = new BanksParser(alphabet);
 
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
@@ -64,9 +67,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "/back":
                         sendMessage(chatId, "Некуда отспупать, Вы уже на шаге номер 1");
                         break;
-                    case "Mitya":
-                        sendMessage(chatId, "Что делаешь " + update.getMessage().getChat().getFirstName()+"?");
-                        break;
                     default:
                         sendMessage(chatId, "Команда не распознана");
                         break;
@@ -80,13 +80,15 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 "Возвращаюсь на шаг номер 1. (Введите /start)", firstStepKeyboard());
                         break;
                     default:
+                        sendMessage(chatId, "Запускаю поиск банков в выбранном городе, ожидайте...");
                         town = messageText;
                         yaParser.setText("Город" + town + "Банки");
                         banks = yaParser.ParseTheYandexName(false);
-                        System.out.println("Банки");
-                        System.out.println(banks);
-                        sendMessage(chatId, "Запускаю поиск банков в выбранном городе");
+
+                        banks_with_currencies = bankParser.banks_with_their_exchange_rates(banks);
+
                         sendMessage(chatId, "Список найденных банков с их курсами:");
+                        sendMessage(chatId, BanksParser.make_str_for_output(banks_with_currencies));
                         sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard(banks));
                         step = 3;
                         break;
@@ -103,13 +105,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                     default:
                         for (String bank : banks) {
                             if (messageText.equals(bank)) {
-                                System.out.println("success");
                                 mainBank = bank;
                             }
                         }
                         sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
                         step = 4;
-                        break; // Исправить
+                        break;
                     }
                 }
             else if (step == 4) {
@@ -123,8 +124,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                         step = 5;
                         break;
                     case "Change":
-                        sendMessageWithKeyboard(chatId, "Вы в режиме Обмена", fifthStepKeyboard());
-                        step = 5;
+                        sendMessageWithKeyboard(chatId, "Вы в режиме Обмена", sixthStepKeyboard());
+                        step = 6;
                         break;
                     case "Map":
                         double latitude = 0;
@@ -144,10 +145,26 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
+            else if (step == 5) {
+                switch (messageText) {
+                    case "/back":
+                        step = 4;
+                        sendMessageWithKeyboard(chatId,
+                                "Возращаюсь на шаг номер 4.", fourthStepKeyboard());
+                        break;
+                }
+            }
+            else if (step == 6) {
+                switch (messageText) {
+                    case "/back":
+                        step = 4;
+                        sendMessageWithKeyboard(chatId,
+                                "Возращаюсь на шаг номер 4.", fourthStepKeyboard());
+                        break;
+                }
+            }
         }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
     }
@@ -201,7 +218,15 @@ public class TelegramBot extends TelegramLongPollingBot {
     private ArrayList<KeyboardRow> fifthStepKeyboard() {
         ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        row.add("some operation");
+        row.add("/back");
+        keyboardRows.add(row);
+        return keyboardRows;
+    }
+
+    private ArrayList<KeyboardRow> sixthStepKeyboard() {
+        ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.add("/back");
         keyboardRows.add(row);
         return keyboardRows;
     }
