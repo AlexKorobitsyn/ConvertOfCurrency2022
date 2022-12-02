@@ -1,6 +1,9 @@
 package BestCurrencyExchangerBot.service;
+
+import Parsers.YandexParser;
 import BestCurrencyExchangerBot.config.BotConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
@@ -10,12 +13,18 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
+    String town = "";
+    Set<String> banks = null;
+    String mainBank = "";
     int step = 1;
     final BotConfig config;
 
@@ -35,6 +44,10 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        YandexParser yaParser = null;
+
+        try {
+            yaParser = new YandexParser();
 
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
@@ -67,14 +80,20 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 "Возвращаюсь на шаг номер 1. (Введите /start)", firstStepKeyboard());
                         break;
                     default:
+                        town = messageText;
+                        yaParser.setText("Город" + town + "Банки");
+                        banks = yaParser.ParseTheYandexName(false);
+                        System.out.println("Банки");
+                        System.out.println(banks);
                         sendMessage(chatId, "Запускаю поиск банков в выбранном городе");
                         sendMessage(chatId, "Список найденных банков с их курсами:");
-                        sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard());
+                        sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard(banks));
                         step = 3;
                         break;
                 }
             }
             else if (step == 3) {
+                mainBank = "";
                 switch (messageText) {
                     case "/back":
                         step = 2;
@@ -82,16 +101,22 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 "Возвращаюсь на шаг номер  2. (Выбор города)", secondStepKeyboard());
                         break;
                     default:
+                        for (String bank : banks) {
+                            if (messageText.equals(bank)) {
+                                System.out.println("success");
+                                mainBank = bank;
+                            }
+                        }
                         sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
                         step = 4;
-                        break;
+                        break; // Исправить
+                    }
                 }
-            }
             else if (step == 4) {
                 switch (messageText) {
                     case "/back":
                         step = 3;
-                        sendMessageWithKeyboard(chatId, "Возвращаюсь на шаг номер 3. (Выбор банка)", thirdStepKeyboard());
+                        sendMessageWithKeyboard(chatId, "Возвращаюсь на шаг номер 3. (Выбор банка)", thirdStepKeyboard(banks));
                         break;
                     case "Calculate":
                         sendMessageWithKeyboard(chatId, "Вы в режиме Калькулятора", fifthStepKeyboard());
@@ -102,13 +127,28 @@ public class TelegramBot extends TelegramLongPollingBot {
                         step = 5;
                         break;
                     case "Map":
-                        sendLocation(chatId, 51.111, 41.1111 );
+                        double latitude = 0;
+                        double longitude = 0;
+                        yaParser.setText("Город" + town + mainBank);
+                        Set<String> coordinates = yaParser.ParseTheYandexName(true);
+                        for (String coordinate : coordinates) {
+                            String[] latAndLong = coordinate.split(",");
+                            latitude = Double.valueOf(latAndLong[0]);
+                            longitude = Double.valueOf(latAndLong[1]);
+                            break;
+                        }
+                        sendLocation(chatId, longitude, latitude );
                         break;
                     default:
                         sendMessage(chatId, "Команда не распознана");
                         break;
                 }
             }
+        }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -129,15 +169,14 @@ public class TelegramBot extends TelegramLongPollingBot {
         keyboardRows.add(row);
         return keyboardRows;
     }
-    private ArrayList<KeyboardRow> thirdStepKeyboard() {
+    private ArrayList<KeyboardRow> thirdStepKeyboard(Set<String> banks) {
         ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        row.add("Сбербанк");
-        keyboardRows.add(row);
-        row = new KeyboardRow();
-        row.add("ВТБ");
-        keyboardRows.add(row);
-        row = new KeyboardRow();
+        for (String bank : banks) {
+            row.add(bank);
+            keyboardRows.add(row);
+            row = new KeyboardRow();
+        }
         row.add("/back");
         keyboardRows.add(row);
         return keyboardRows;

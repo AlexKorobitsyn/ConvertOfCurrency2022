@@ -1,3 +1,5 @@
+import Parsers.Parser;
+
 import java.util.HashMap;
 
 public class InputSystem {
