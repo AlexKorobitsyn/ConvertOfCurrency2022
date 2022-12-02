@@ -1,3 +1,5 @@
+package Calculate_Classes;
+
 import java.util.HashMap;
 import java.util.Objects;
 

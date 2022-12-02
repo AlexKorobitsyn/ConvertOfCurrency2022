@@ -1,3 +1,6 @@
+import Calculate_Classes.Convert;
+import Calculate_Classes.InputProcessing;
+
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;

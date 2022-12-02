@@ -20,17 +20,7 @@ public class YandexParser {
 
     private final String[] tmp = {"СберБанк", "ВТБ", "Газпромбанк", "Альфа-Банк",
             "Россельхозбанк", "Московский кредитный банк", "МТС банк", "Банк Открытие"};
-//    private Set<String> banks()
-//    {
-//        Set<String> banks = new HashSet<>();
-//        for(int i = 0;i<tmp.length;i++)
-//        {
-//            banks.add(tmp[i]);
-//        }
-//        return banks;
-//    }
 
-//    private Set<String> banks = banks();
     private final String APIKey = Files.readString(path);// Безопасность ключа.
     private int results = 500;
 

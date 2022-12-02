@@ -90,4 +90,20 @@ public class BanksParser {
 
         return result;
     }
+    public static HashMap<String, Double> make_dict_for_calculate( // получение словаря валюта - значение для вычислений
+            HashMap<String, HashMap<String, Double>> bank_with_currencies, String type
+    )
+    {
+        HashMap<String, Double> currencies_values = new HashMap<>();
+        for (String currency : bank_with_currencies.keySet()){
+            String new_currency_form = switch (currency) {
+                case "Евро" -> "EUR";
+                case "Доллар" -> "USD";
+                case "Рубль" -> "RUB";
+                default -> "";
+            };
+            currencies_values.put(new_currency_form, bank_with_currencies.get(currency).get(type));
+        }
+        return currencies_values;
+    }
 }
