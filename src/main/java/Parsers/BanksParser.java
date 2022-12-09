@@ -68,7 +68,7 @@ public class BanksParser {
         return dict_with_currency_and_values;
     }
 
-    public static String make_str_for_output(HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_currencies){
+    public static String makeOutputStr(HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_currencies){
         String result = "";
         Set<String> banks = banks_with_currencies.keySet();
         for (String bank : banks){

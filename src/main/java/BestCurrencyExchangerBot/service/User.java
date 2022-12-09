@@ -1,7 +1,12 @@
 package BestCurrencyExchangerBot.service;
 
+import java.util.HashMap;
+
 public class User {
     private String town = "";
+    private TownStructure townStructure;
+    private HashMap<String, Double> bank_currencies_for_calculate = new HashMap<>();
+
     private String mainBank = "";
     private String step = "Start";
     private String firstCurrency = "";
@@ -54,5 +59,21 @@ public class User {
 
     public void setNumberOfFirstCurrency(Integer numberOfFirstCurrency) {
         this.numberOfFirstCurrency = numberOfFirstCurrency;
+    }
+
+    public TownStructure getTownStructure() {
+        return townStructure;
+    }
+
+    public void setTownStructure(TownStructure townStructure) {
+        this.townStructure = townStructure;
+    }
+
+    public HashMap<String, Double> getBank_currencies_for_calculate() {
+        return bank_currencies_for_calculate;
+    }
+
+    public void setBank_currencies_for_calculate(HashMap<String, Double> bank_currencies_for_calculate) {
+        this.bank_currencies_for_calculate = bank_currencies_for_calculate;
     }
 }

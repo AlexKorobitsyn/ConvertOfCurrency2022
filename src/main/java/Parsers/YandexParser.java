@@ -36,64 +36,53 @@ public class YandexParser {
         String URL = model +"&text=" + text + "&results=" + results;
         return URL;
     }
-//name - 0(false), coordinate - 1(true)
-public Set<String> ParseTheYandexName(boolean key) throws IOException, ParseException {//Вторая функция Desicion
-    String URL1 = MakeALink(GiveSecretKey());
-    Document page  = Jsoup.connect(URL1).ignoreContentType(true).get();
-    String str = page.text();
-    Scanner scan = new Scanner(str);
-    Set<String> unfilteredResult = new HashSet<>();
-    int i = 0;
-    if (key) {
-        setResults(50);
-        while (true) {
-            String goodString = scan.findInLine("(?<=\"coordinates\":.).+?(?=\\])");
-            if (goodString == null)
-                break;
-            unfilteredResult.add(goodString.toString());
-            i++;
-        }
-       return unfilteredResult;
-    }
-    else
-    {
-        YandexParser ss = null;
-        try {
-            ss = new YandexParser();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Set<String> result = new HashSet<>();
-
-        while (true) {
-            setResults(500);
-            String goodString = scan.findInLine("(?<=\"properties\":\\{\"name\":\").+?(?=\")");
-            if (goodString == null)
-                break;
-            unfilteredResult.add(goodString.toString());
-            i++;
-        }
-        for (int k = 0; k < ss.tmp.length; k++)
-        {
-            if(unfilteredResult.contains(ss.tmp[k]))
-            {
-                result.add(ss.tmp[k]);
+    //name - 0(false), coordinate - 1(true)
+    public Set<String> ParseTheYandexName(boolean key) throws IOException, ParseException {//Вторая функция Desicion
+        String URL1 = MakeALink(GiveSecretKey());
+        Document page  = Jsoup.connect(URL1).ignoreContentType(true).get();
+        String str = page.text();
+        Scanner scan = new Scanner(str);
+        Set<String> unfilteredResult = new HashSet<>();
+        int i = 0;
+        if (key) {
+            setResults(50);
+            while (true) {
+                String goodString = scan.findInLine("(?<=\"coordinates\":.).+?(?=\\])");
+                if (goodString == null)
+                    break;
+                unfilteredResult.add(goodString.toString());
+                i++;
             }
+           return unfilteredResult;
         }
-        return result;
+        else
+        {
+            YandexParser ss = null;
+            try {
+                ss = new YandexParser();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Set<String> result = new HashSet<>();
+
+            while (true) {
+                setResults(500);
+                String goodString = scan.findInLine("(?<=\"properties\":\\{\"name\":\").+?(?=\")");
+                if (goodString == null)
+                    break;
+                unfilteredResult.add(goodString.toString());
+                i++;
+            }
+            for (int k = 0; k < ss.tmp.length; k++)
+            {
+                if(unfilteredResult.contains(ss.tmp[k]))
+                {
+                    result.add(ss.tmp[k]);
+                }
+            }
+            return result;
+        }
     }
-}
-
-//    public static void main(String[] args) {
-//        YandexParser ss = null;
-//        try {
-//            ss = new YandexParser();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        System.out.println(ss.banks);
-//    }
-
 
     public int getResults() {
         return results;
