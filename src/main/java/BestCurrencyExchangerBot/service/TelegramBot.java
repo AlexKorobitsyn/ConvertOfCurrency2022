@@ -15,10 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -33,13 +30,14 @@ public class TelegramBot extends TelegramLongPollingBot {
     Set<String> banks = null;
     HashMap<String, HashMap<String, HashMap<String, Double>>> banks_with_currencies;
     String mainBank = "";
-    String step = "Start";
 
     String first_currency = "";
 
     Integer number_of_first_currency;
 
     String second_currency = "";
+
+    HashMap<Long, User> arrayOfUsers = new HashMap<>();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -57,21 +55,30 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        User user;
         try {
+
             YandexParser yaParser = new YandexParser();
             BanksParser bankParser = new BanksParser(alphabet);
 
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-
-            if (Objects.equals(step, "Start")) {
+            if (arrayOfUsers.get(chatId) == null) {
+                user = new User();
+                arrayOfUsers.put(chatId, user);
+            }
+            else
+            {
+                user = arrayOfUsers.get(chatId);
+            }
+            if (Objects.equals(user.getStep(), "Start")) {
                 switch (messageText) {
                     case "/start":
                         String text = "Введите город, в котором хотите найти обменник валют";
                         startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
                         sendMessageWithKeyboard(chatId, text, secondStepKeyboard());
-                        step = "Choose City";
+                        user.setStep("Choose City");
                         break;
                     case "/back":
                         sendMessage(chatId, "Некуда отспупать, Вы уже на шаге номер 1");
@@ -81,17 +88,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
-            else if (Objects.equals(step, "Choose City")) {
+            else if (Objects.equals(user.getStep(), "Choose City")) {
                 switch (messageText) {
                     case "/back":
-                        step = "Start";
+                        user.setStep("Start");
                         sendMessageWithKeyboard(chatId,
                                 "Возвращаюсь на шаг назад. (Введите /start)", firstStepKeyboard());
                         break;
                     default:
                         sendMessage(chatId, "Запускаю поиск банков в выбранном городе, ожидайте...");
-                        town = messageText;
-                        yaParser.setText("Город" + town + "Банки");
+                        user.setTown(messageText);
+                        yaParser.setText("Город" + user.getTown() + "Банки");
                         banks = yaParser.ParseTheYandexName(false);
 
                         banks_with_currencies = bankParser.banks_with_their_exchange_rates(banks);
@@ -99,49 +106,49 @@ public class TelegramBot extends TelegramLongPollingBot {
                         sendMessage(chatId, "Список найденных банков с их курсами:");
                         sendMessage(chatId, BanksParser.make_str_for_output(banks_with_currencies));
                         sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard(banks));
-                        step = "Choose Bank";
+                        user.setStep("Choose Bank");
                         break;
                 }
             }
-            else if (Objects.equals(step, "Choose Bank")) {
-                mainBank = "";
+            else if (Objects.equals(user.getStep(), "Choose Bank")) {
+                user.setMainBank("");
                 switch (messageText) {
                     case "/back":
-                        step = "Choose City";
+                        user.setStep("Choose City");
                         sendMessageWithKeyboard(chatId,
                                 "Возвращаюсь на шаг назад. (Выбор города)", secondStepKeyboard());
                         break;
                     default:
                         for (String bank : banks) {
                             if (messageText.equals(bank)) {
-                                mainBank = bank;
+                                user.setMainBank(bank);
                             }
                         }
                         sendMessageWithKeyboard(chatId, "Выберите, Sell или Buy", fifthStepKeyboard());
-                        step = "Sell or Buy";
+                        user.setStep("Sell or Buy");
                         break;
                     }
                 }
-            else if (Objects.equals(step, "Calculate or Change")) {
+            else if (Objects.equals(user.getStep(), "Calculate or Change")) {
                 switch (messageText) {
                     case "/back":
-                        step = "Choose Bank";
+                        user.setStep("Choose Bank");
                         sendMessageWithKeyboard(chatId, "Возвращаюсь на шаг назад.", fifthStepKeyboard());
                         break;
                     case "Calculate":
                         sendMessageWithKeyboard(chatId,
                                 "Введите выражение", seventhStepKeyboard());
-                        step = "Expression for Calculate";
+                        user.setStep("Expression for Calculate");
                         break;
                     case "Change":
                         sendMessageWithKeyboard(chatId, "Вы в режиме Обмена", sixthStepKeyboard());
                         sendMessage(chatId, "Введите валюту котороую хотите перевести");
-                        step = "Expression for Change Part1";
+                        user.setStep("Expression for Change Part1");
                         break;
                     case "Map":
                         double latitude = 0;
                         double longitude = 0;
-                        yaParser.setText("Город" + town + mainBank);
+                        yaParser.setText("Город" + user.getTown() + user.getMainBank());
                         Set<String> coordinates = yaParser.ParseTheYandexName(true);
                         for (String coordinate : coordinates) {
                             String[] latAndLong = coordinate.split(",");
@@ -156,22 +163,22 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
-            else if (Objects.equals(step, "Sell or Buy")) {
+            else if (Objects.equals(user.getStep(), "Sell or Buy")) {
                 switch (messageText) {
                     case "Sell":
                         bank_currencies_for_calculate =
-                                BanksParser.make_dict_for_calculate(banks_with_currencies.get(mainBank), "sell");
-                        step = "Calculate or Change";
+                                BanksParser.make_dict_for_calculate(banks_with_currencies.get(user.getMainBank()), "sell");
+                        user.setStep("Calculate or Change");
                         sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
                         break;
                     case "Buy":
                         bank_currencies_for_calculate =
-                                BanksParser.make_dict_for_calculate(banks_with_currencies.get(mainBank), "buy");
-                        step = "Calculate or Change";
+                                BanksParser.make_dict_for_calculate(banks_with_currencies.get(user.getMainBank()), "buy");
+                        user.setStep("Calculate or Change");
                         sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
                         break;
                     case "/back":
-                        step = "Choose Bank";
+                        user.setStep("Choose Bank");
                         sendMessageWithKeyboard(chatId,
                                 "Возвращаюсь на шаг назад", thirdStepKeyboard(banks));
                         break;
@@ -180,7 +187,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
-            else if (Objects.equals(step, "Expression for Calculate")) {
+            else if (Objects.equals(user.getStep(), "Expression for Calculate")) {
                 switch (messageText) {
                     case "/help":
                         sendMessage(chatId, """
@@ -202,7 +209,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 OUT: 1192,488 RUB""");
                         break;
                     case "/back":
-                        step = "Calculate or Change";
+                        user.setStep("Calculate or Change");
                         sendMessageWithKeyboard(chatId,
                                 "Возвращаюсь на шаг назад.", fourthStepKeyboard());
                         break;
@@ -211,18 +218,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
-            else if (Objects.equals(step, "Expression for Change Part1")) {
+            else if (Objects.equals(user.getStep(), "Expression for Change Part1")) {
                 switch (messageText) {
                     case "EUR":
                     case "RUB":
                     case "USD":
-                        first_currency = messageText;
-                        step = "Expression for Change Part2";
+                        user.setFirstCurrency(messageText);
+                        user.setStep("Expression for Change Part2");
                         sendMessageWithKeyboard(chatId,
                                 "Введите кол-во единиц данной валюты", eighthStepKeyboard());
                         break;
                     case "/back":
-                        step = "Calculate or Change";
+                        user.setStep("Calculate or Change");
                         sendMessageWithKeyboard(chatId,
                                 "Возращаюсь на шаг назад", fourthStepKeyboard());
                         break;
@@ -231,17 +238,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
-            else if (Objects.equals(step, "Expression for Change Part2")){
+            else if (Objects.equals(user.getStep(), "Expression for Change Part2")){
                 switch (messageText) {
                     case "/back":
-                        step = "Expression for Change Part1";
+                        user.setStep("Expression for Change Part1");
                         sendMessageWithKeyboard(chatId,
                                 "Выберите валюту которую хотите обменять", sixthStepKeyboard());
                         break;
                     default:
                         try {
-                            number_of_first_currency = Integer.parseInt(messageText);
-                            step = "Expression for Change Part3";
+                            user.setNumberOfFirstCurrency(Integer.parseInt(messageText));
+                            user.setStep("Expression for Change Part3");
                             sendMessageWithKeyboard(chatId,
                                     "Выберите валюту в которую переводим", ninthStepKeyboard());
                         }
@@ -251,20 +258,20 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                 }
             }
-            else if (Objects.equals(step, "Expression for Change Part3")){
+            else if (Objects.equals(user.getStep(), "Expression for Change Part3")){
                 switch (messageText){
                     case "USD":
                     case "EUR":
                     case "RUB":
-                        second_currency = messageText;
-                        step = "Expression for Change Part1";
-                        String expr = number_of_first_currency + " " + first_currency + " in " + second_currency;
+                        user.setFirstCurrency(messageText);
+                        user.setStep("Expression for Change Part1");
+                        String expr = user.getNumberOfFirstCurrency() + " " + user.getFirstCurrency() + " in " + user.getSecondСurrency();
                         sendMessageWithKeyboard(chatId,
                                 in.input(expr, bank_currencies_for_calculate) +
                                         "\nПовторим? Выберите валюту которую хотите обменять", sixthStepKeyboard());
                         break;
                     case "/back":
-                        step = "Expression for Change Part2";
+                        user.setStep("Expression for Change Part2");
                         sendMessageWithKeyboard(chatId,
                                 "Введите кол-во единиц данной валюты", eighthStepKeyboard());
                     default:
