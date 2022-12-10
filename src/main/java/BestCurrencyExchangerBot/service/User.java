@@ -5,13 +5,13 @@ import java.util.HashMap;
 public class User {
     private String town = "";
     private TownStructure townStructure;
-    private HashMap<String, Double> bank_currencies_for_calculate = new HashMap<>();
+    private HashMap<String, Double> bankCurrenciesForCalculate = new HashMap<>();
 
     private String mainBank = "";
     private String step = "Start";
     private String firstCurrency = "";
     private Integer numberOfFirstCurrency = 0;
-    private String secondСurrency = "";
+    private String secondCurrency = "";
 
     public String getTown() {
         return town;
@@ -45,12 +45,12 @@ public class User {
         this.firstCurrency = firstCurrency;
     }
 
-    public String getSecondСurrency() {
-        return secondСurrency;
+    public String getSecondCurrency() {
+        return secondCurrency;
     }
 
-    public void setSecondСurrency(String secondСurrency) {
-        this.secondСurrency = secondСurrency;
+    public void setSecondCurrency(String secondCurrency) {
+        this.secondCurrency = secondCurrency;
     }
 
     public Integer getNumberOfFirstCurrency() {
@@ -69,11 +69,11 @@ public class User {
         this.townStructure = townStructure;
     }
 
-    public HashMap<String, Double> getBank_currencies_for_calculate() {
-        return bank_currencies_for_calculate;
+    public HashMap<String, Double> getBankCurrenciesForCalculate() {
+        return bankCurrenciesForCalculate;
     }
 
-    public void setBank_currencies_for_calculate(HashMap<String, Double> bank_currencies_for_calculate) {
-        this.bank_currencies_for_calculate = bank_currencies_for_calculate;
+    public void setBankCurrenciesForCalculate(HashMap<String, Double> bankCurrenciesForCalculate) {
+        this.bankCurrenciesForCalculate = bankCurrenciesForCalculate;
     }
 }

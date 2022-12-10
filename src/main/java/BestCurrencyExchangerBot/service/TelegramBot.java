@@ -1,6 +1,5 @@
 package BestCurrencyExchangerBot.service;
-import Calculate_Classes.Interface;
-import Parsers.YandexParser;
+import CalculateClasses.Interface;
 import Parsers.BanksParser;
 import BestCurrencyExchangerBot.config.BotConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +22,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     final BotConfig config;
 
-    Interface in = new Interface();
-    HashMap<Long, User> arrayOfUsers = new HashMap<>();
+    private final Interface in = new Interface();
+    private HashMap<Long, User> arrayOfUsers = new HashMap<>();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -44,11 +43,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         User user;
         try {
-
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            if (arrayOfUsers.get(chatId) == null) {
+            if (!arrayOfUsers.containsKey(chatId)) {
                 user = new User();
                 arrayOfUsers.put(chatId, user);
             }
@@ -85,14 +83,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                         user.setTownStructure(TownStructure.getStructure(user.getTown()));
 
                         sendMessage(chatId, "Список найденных банков с их курсами:");
-                        sendMessage(chatId, BanksParser.makeOutputStr(user.getTownStructure().getBanks_with_currencies()));
+                        sendMessage(chatId, BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies()));
                         sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard(user.getTownStructure().getBanks()));
                         user.setStep("Choose Bank");
                         break;
                 }
             }
             else if (Objects.equals(user.getStep(), "Choose Bank")) {
-                user.setMainBank("");
                 switch (messageText) {
                     case "/back":
                         user.setStep("Choose City");
@@ -113,7 +110,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             else if (Objects.equals(user.getStep(), "Calculate or Change")) {
                 switch (messageText) {
                     case "/back":
-                        user.setStep("Choose Bank");
+                        user.setStep("Sell or Buy");
                         sendMessageWithKeyboard(chatId, "Возвращаюсь на шаг назад.", fifthStepKeyboard());
                         break;
                     case "Calculate":
@@ -132,8 +129,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                         Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
                         for (String coordinate : coordinates) {
                             String[] latAndLong = coordinate.split(",");
-                            latitude = Double.valueOf(latAndLong[0]);
-                            longitude = Double.valueOf(latAndLong[1]);
+                            latitude = Double.parseDouble(latAndLong[0]);
+                            longitude = Double.parseDouble(latAndLong[1]);
                             break;
                         }
                         sendLocation(chatId, longitude, latitude );
@@ -146,12 +143,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             else if (Objects.equals(user.getStep(), "Sell or Buy")) {
                 switch (messageText) {
                     case "Sell":
-                        user.setBank_currencies_for_calculate(BanksParser.make_dict_for_calculate(user.getTownStructure().getBanks_with_currencies().get(user.getMainBank()), "sell"));
+                        user.setBankCurrenciesForCalculate(BanksParser.makeDictForCalculate(user.getTownStructure().getBanksWithCurrencies().get(user.getMainBank()), "sell"));
                         user.setStep("Calculate or Change");
                         sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
                         break;
                     case "Buy":
-                        user.setBank_currencies_for_calculate(BanksParser.make_dict_for_calculate(user.getTownStructure().getBanks_with_currencies().get(user.getMainBank()), "buy"));
+                        user.setBankCurrenciesForCalculate(BanksParser.makeDictForCalculate(user.getTownStructure().getBanksWithCurrencies().get(user.getMainBank()), "buy"));
                         user.setStep("Calculate or Change");
                         sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
                         break;
@@ -192,7 +189,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 "Возвращаюсь на шаг назад.", fourthStepKeyboard());
                         break;
                     default:
-                        sendMessage(chatId, in.input(messageText, user.getBank_currencies_for_calculate()));
+                        sendMessage(chatId, in.input(messageText, user.getBankCurrenciesForCalculate()));
                         break;
                 }
             }
@@ -241,11 +238,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "USD":
                     case "EUR":
                     case "RUB":
-                        user.setSecondСurrency(messageText);
+                        user.setSecondCurrency(messageText);
                         user.setStep("Expression for Change Part1");
-                        String expr = user.getNumberOfFirstCurrency() + " " + user.getFirstCurrency() + " in " + user.getSecondСurrency();
+                        String expr = user.getNumberOfFirstCurrency() + " " + user.getFirstCurrency() + " in " + user.getSecondCurrency();
                         sendMessageWithKeyboard(chatId,
-                                in.input(expr, user.getBank_currencies_for_calculate()) +
+                                in.input(expr, user.getBankCurrenciesForCalculate()) +
                                         "\nПовторим? Выберите валюту которую хотите обменять", sixthStepKeyboard());
                         break;
                     case "/back":

@@ -1,4 +1,4 @@
-package Calculate_Classes;
+package CalculateClasses;
 
 import java.util.HashMap;
 
@@ -10,9 +10,9 @@ public class InputSystem {
         arrOfWord = str.split(" ");//разбить на массив
         return arrOfWord;
     }
-    public String inputProcessor(String str, HashMap<String,Double> currencies_values) throws Exception {//метод занимается входными данными
+    public String inputProcessor(String str, HashMap<String,Double> currenciesValues) throws Exception {//метод занимается входными данными
         String[] arrOfWord = makeArrFromString(str);
-        Convert mainConvert = new Convert(currencies_values);//создание класса для подсчёта
+        Convert mainConvert = new Convert(currenciesValues);//создание класса для подсчёта
         InputProcessing worker = new InputProcessing(mainConvert);
         double tempValue = worker.process(arrOfWord, arrOfWord.length);//основной подсчёт
         Interface out = new Interface();

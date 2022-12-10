@@ -1,4 +1,4 @@
-import Calculate_Classes.Convert;
+import CalculateClasses.Convert;
 
 import java.util.HashMap;
 

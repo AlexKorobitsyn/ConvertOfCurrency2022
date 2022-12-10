@@ -33,13 +33,12 @@ public class YandexParser {
 
     private String MakeALink(String model)
     {
-        String URL = model +"&text=" + text + "&results=" + results;
-        return URL;
+        return model +"&text=" + text + "&results=" + results;
     }
     //name - 0(false), coordinate - 1(true)
     public Set<String> ParseTheYandexName(boolean key) throws IOException, ParseException {//Вторая функция Desicion
-        String URL1 = MakeALink(GiveSecretKey());
-        Document page  = Jsoup.connect(URL1).ignoreContentType(true).get();
+        String url1 = MakeALink(GiveSecretKey());
+        Document page  = Jsoup.connect(url1).ignoreContentType(true).get();
         String str = page.text();
         Scanner scan = new Scanner(str);
         Set<String> unfilteredResult = new HashSet<>();
@@ -50,14 +49,14 @@ public class YandexParser {
                 String goodString = scan.findInLine("(?<=\"coordinates\":.).+?(?=\\])");
                 if (goodString == null)
                     break;
-                unfilteredResult.add(goodString.toString());
+                unfilteredResult.add(goodString);
                 i++;
             }
            return unfilteredResult;
         }
         else
         {
-            YandexParser ss = null;
+            YandexParser ss;
             try {
                 ss = new YandexParser();
             } catch (IOException e) {
@@ -70,7 +69,7 @@ public class YandexParser {
                 String goodString = scan.findInLine("(?<=\"properties\":\\{\"name\":\").+?(?=\")");
                 if (goodString == null)
                     break;
-                unfilteredResult.add(goodString.toString());
+                unfilteredResult.add(goodString);
                 i++;
             }
             for (int k = 0; k < ss.tmp.length; k++)

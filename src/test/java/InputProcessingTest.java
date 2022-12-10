@@ -1,5 +1,5 @@
-import Calculate_Classes.Convert;
-import Calculate_Classes.InputProcessing;
+import CalculateClasses.Convert;
+import CalculateClasses.InputProcessing;
 
 import java.util.HashMap;
 

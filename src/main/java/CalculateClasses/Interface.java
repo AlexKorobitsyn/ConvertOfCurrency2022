@@ -1,10 +1,10 @@
-package Calculate_Classes;
+package CalculateClasses;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Scanner;
 
 public class Interface {
-    public String input(String expression, HashMap<String, Double> currencies_values) throws Exception {
+    public String input(String expression, HashMap<String, Double> currenciesValues) throws Exception {
         Scanner inStr = new Scanner(expression);
         String resOfRegex = "";//с помощью регулярки отсеивает ошибочные строки
         resOfRegex = inStr.findInLine("(((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)([+|-]))+(\\s+)\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))|((\\s+)?\\d+(\\s+)(USD|EUR|RUB)(\\s+)in(\\s+)(USD|EUR|RUB))");
@@ -15,7 +15,7 @@ public class Interface {
         else
         {
             InputSystem process = new InputSystem();
-            return process.inputProcessor(resOfRegex, currencies_values);
+            return process.inputProcessor(resOfRegex, currenciesValues);
         }
     }
 

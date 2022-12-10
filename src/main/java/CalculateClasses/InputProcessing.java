@@ -1,10 +1,10 @@
-package Calculate_Classes;
+package CalculateClasses;
 
 import java.util.HashMap;
 import java.util.Objects;
 
 public class InputProcessing {
-    private Convert convert;
+    private final Convert convert;
     private String finalCurrency;
 
     public InputProcessing(Convert convert) {

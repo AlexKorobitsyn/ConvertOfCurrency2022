@@ -1,4 +1,4 @@
-package Calculate_Classes;
+package CalculateClasses;
 
 import java.util.HashMap;
 
