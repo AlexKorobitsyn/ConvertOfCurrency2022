@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 public class User {
     private Location coordinatesOfUser = new Location();
+    private boolean haveCoordinates = false;
     private String town = "";
     private TownStructure townStructure;
     private HashMap<String, Double> bankCurrenciesForCalculate = new HashMap<>();
@@ -94,5 +95,14 @@ public class User {
         String coordinates = coordinatesOfUser.getLongitude()+","+coordinatesOfUser.getLatitude();
         yandexParser.setGeocode(coordinates);
         this.setTown(yandexParser.takeTheTown());
+        this.setHaveCoordinates(true);
+    }
+
+    public boolean isHaveCoordinates() {
+        return haveCoordinates;
+    }
+
+    public void setHaveCoordinates(boolean haveCoordinates) {
+        this.haveCoordinates = haveCoordinates;
     }
 }

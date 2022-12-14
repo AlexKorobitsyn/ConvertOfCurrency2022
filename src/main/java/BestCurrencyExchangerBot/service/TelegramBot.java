@@ -109,6 +109,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     switch (messageText) {
                         case "/back":
                             user.setStep("Choose City");
+                            user.setHaveCoordinates(false);
                             sendMessageWithKeyboard(chatId,
                                     "Возвращаюсь на шаг назад. (Выбор города)", secondStepKeyboard());
                             break;
@@ -139,31 +140,43 @@ public class TelegramBot extends TelegramLongPollingBot {
                             user.setStep("Expression for Change Part1");
                             break;
                         case "Map":
-                            int i =0;
-                            double userLatitude = user.getCoordinatesOfUser().getLatitude();
-                            double userLongitude = user.getCoordinatesOfUser().getLongitude();
                             double latitude = 0;
                             double longitude = 0;
-                            double saveLatitude = 0;
-                            double saveLongitude = 0;
-                            double minDistance = 1111110111;
-                            Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
-                            for (String coordinate : coordinates) {
-                                String[] latAndLong = coordinate.split(",");
-                                latitude = Double.parseDouble(latAndLong[1]);
-                                longitude = Double.parseDouble(latAndLong[0]);
-                                double x = Math.abs(longitude - userLongitude);
-                                double y = Math.abs(latitude - userLatitude);
-                                double newDistance = x+y;
+                            if (user.isHaveCoordinates()) {
+                                int i = 0;
+                                double userLatitude = user.getCoordinatesOfUser().getLatitude();
+                                double userLongitude = user.getCoordinatesOfUser().getLongitude();
+                                double saveLatitude = 0;
+                                double saveLongitude = 0;
+                                double minDistance = 1111110111;
+                                Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
+                                for (String coordinate : coordinates) {
+                                    String[] latAndLong = coordinate.split(",");
+                                    latitude = Double.parseDouble(latAndLong[1]);
+                                    longitude = Double.parseDouble(latAndLong[0]);
+                                    double x = Math.abs(longitude - userLongitude);
+                                    double y = Math.abs(latitude - userLatitude);
+                                    double newDistance = x + y;
 
-                                i=i+1;
-                                if (newDistance < minDistance) {
-                                    minDistance = newDistance;
-                                    saveLatitude = latitude;
-                                    saveLongitude = longitude;
+                                    i = i + 1;
+                                    if (newDistance < minDistance) {
+                                        minDistance = newDistance;
+                                        saveLatitude = latitude;
+                                        saveLongitude = longitude;
+                                    }
                                 }
+                                sendLocation(chatId, saveLatitude, saveLongitude);
                             }
-                            sendLocation(chatId, saveLatitude,saveLongitude);
+                            else {
+                                Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
+                                for (String coordinate : coordinates) {
+                                    String[] latAndLong = coordinate.split(",");
+                                    latitude = Double.parseDouble(latAndLong[1]);
+                                    longitude = Double.parseDouble(latAndLong[0]);
+                                    break;
+                                }
+                                sendLocation(chatId, latitude, longitude);
+                            }
                             break;
                         default:
                             sendMessage(chatId, "Команда не распознана");
