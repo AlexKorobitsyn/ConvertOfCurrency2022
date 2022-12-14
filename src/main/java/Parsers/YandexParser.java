@@ -14,37 +14,42 @@ public class YandexParser {
 
     public YandexParser() throws IOException {
     }
-    static private final Path path = Paths.get("src\\main\\resources\\keys.txt");
-
+    private String geocode;
     private String text;
-
     private final String[] tmp = {"СберБанк", "ВТБ", "Газпромбанк", "Альфа-Банк",
             "Россельхозбанк", "Московский кредитный банк", "МТС банк", "Банк Открытие"};
+    private final String APIKeyForSearch = System.getProperty("apiKeyForSearch");// Безопасность ключа.
 
-    private final String APIKey = Files.readString(path);// Безопасность ключа.
+    private final String apiKeyForGeocoder = System.getProperty("apiKeyForGeocoder");
     private int results = 500;
 
-    private String GiveSecretKey()//придётся сохранять готовую модель ссылки с ключом
+
+    private String makeALinkGeocoder()
     {
-        String link = "https://search-maps.yandex.ru/v1/?type=biz&lang=ru_RU";
-        link += "&apikey=" + APIKey ;
+        String link = "https://geocode-maps.yandex.ru/1.x/?apikey=";
+        link += apiKeyForGeocoder + "&geocode=" + geocode + "&results=" + 1;
         return link;
     }
 
-    private String MakeALink(String model)
+    private String makeALink()
     {
-        return model +"&text=" + text + "&results=" + results;
+        return ("https://search-maps.yandex.ru/v1/?type=biz&lang=ru_RU"+ "&apikey=" + APIKeyForSearch  )
+                +("&text=" + text + "&results=" + results);
     }
     //name - 0(false), coordinate - 1(true)
     public Set<String> ParseTheYandexName(boolean key) throws IOException, ParseException {//Вторая функция Desicion
-        String url1 = MakeALink(GiveSecretKey());
+        if (key)
+            setResults(50);
+        else
+            setResults(500);
+        String url1 = makeALink();
         Document page  = Jsoup.connect(url1).ignoreContentType(true).get();
         String str = page.text();
         Scanner scan = new Scanner(str);
         Set<String> unfilteredResult = new HashSet<>();
         int i = 0;
         if (key) {
-            setResults(50);
+
             while (true) {
                 String goodString = scan.findInLine("(?<=\"coordinates\":.).+?(?=\\])");
                 if (goodString == null)
@@ -65,7 +70,6 @@ public class YandexParser {
             Set<String> result = new HashSet<>();
 
             while (true) {
-                setResults(500);
                 String goodString = scan.findInLine("(?<=\"properties\":\\{\"name\":\").+?(?=\")");
                 if (goodString == null)
                     break;
@@ -82,6 +86,20 @@ public class YandexParser {
             return result;
         }
     }
+    public String takeTheTown() throws IOException {
+        String url1 = makeALinkGeocoder();
+        Document page  = Jsoup.connect(url1).ignoreContentType(true).get();
+        String str = page.text();
+        Scanner scan = new Scanner(str);
+        String goodString = scan.findInLine("(?<=locality).+?(?=[A-Za-z])");
+        return goodString;
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        YandexParser yy = new YandexParser();
+        yy.setGeocode("60.607436,56.774992");
+    }
 
     public int getResults() {
         return results;
@@ -97,5 +115,13 @@ public class YandexParser {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getGeocode() {
+        return geocode;
+    }
+
+    public void setGeocode(String geocode) {
+        this.geocode = geocode;
     }
 }
