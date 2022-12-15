@@ -73,6 +73,13 @@ public class TownStructure {
     }
 
     public static Set<String> getCoordinates(String mainBank, String town) throws IOException, ParseException {
+        if (Objects.equals(mainBank, "Сбербанк") && Objects.equals(town, "London")){ // заглушка
+            Set<String> coordinates = new HashSet<>();
+            coordinates.add("63.340774,61.314464");
+            coordinates.add("63.323504,61.312341");
+            coordinates.add("63.343912,61.31457");
+            return coordinates;
+        }
         YandexParser yaParser = new YandexParser();
         yaParser.setText("Город" + town + mainBank);
         return yaParser.ParseTheYandexName(true);

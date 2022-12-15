@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,5 +54,14 @@ class TownStructureTest {
 
         assertEquals(expectedTownStructure.getBanks(), TownStructure.getStructure("London").getBanks());
         assertEquals(expectedTownStructure.getBanksWithCurrencies(), TownStructure.getStructure("London").getBanksWithCurrencies());
+    }
+
+    @Test
+    void testGetCoordinates() throws IOException, ParseException {
+        Set<String> ExpectedCoordinates = new HashSet<>();
+        ExpectedCoordinates.add("63.340774,61.314464");
+        ExpectedCoordinates.add("63.323504,61.312341");
+        ExpectedCoordinates.add("63.343912,61.31457");
+        assertEquals(ExpectedCoordinates, TownStructure.getCoordinates("Сбербанк", "London"));
     }
 }
