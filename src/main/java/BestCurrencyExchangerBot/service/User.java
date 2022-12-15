@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class User {
+    private String firstName;
+    private long chatId;
     private Location coordinatesOfUser = new Location();
     private boolean haveCoordinates = false;
     private String town = "";
@@ -22,75 +24,93 @@ public class User {
     public User() throws IOException {
     }
 
-    public String getTown() {
+    public String getTown()
+    {
         return town;
     }
 
-    public void setTown(String town) {
+    public void setTown(String town)
+    {
         this.town = town;
     }
 
-    public String getMainBank() {
+    public String getMainBank()
+    {
         return mainBank;
     }
 
-    public void setMainBank(String mainBank) {
+    public void setMainBank(String mainBank)
+    {
         this.mainBank = mainBank;
     }
 
-    public String getStep() {
+    public String getStep()
+    {
         return step;
     }
 
-    public void setStep(String step) {
+    public void setStep(String step)
+    {
         this.step = step;
     }
 
-    public String getFirstCurrency() {
+    public String getFirstCurrency()
+    {
         return firstCurrency;
     }
 
-    public void setFirstCurrency(String firstCurrency) {
+    public void setFirstCurrency(String firstCurrency)
+    {
         this.firstCurrency = firstCurrency;
     }
 
-    public String getSecondCurrency() {
+    public String getSecondCurrency()
+    {
         return secondCurrency;
     }
 
-    public void setSecondCurrency(String secondCurrency) {
+    public void setSecondCurrency(String secondCurrency)
+    {
         this.secondCurrency = secondCurrency;
     }
 
-    public Integer getNumberOfFirstCurrency() {
+    public Integer getNumberOfFirstCurrency()
+    {
         return numberOfFirstCurrency;
     }
 
-    public void setNumberOfFirstCurrency(Integer numberOfFirstCurrency) {
+    public void setNumberOfFirstCurrency(Integer numberOfFirstCurrency)
+    {
         this.numberOfFirstCurrency = numberOfFirstCurrency;
     }
 
-    public TownStructure getTownStructure() {
+    public TownStructure getTownStructure()
+    {
         return townStructure;
     }
 
-    public void setTownStructure(TownStructure townStructure) {
+    public void setTownStructure(TownStructure townStructure)
+    {
         this.townStructure = townStructure;
     }
 
-    public HashMap<String, Double> getBankCurrenciesForCalculate() {
+    public HashMap<String, Double> getBankCurrenciesForCalculate()
+    {
         return bankCurrenciesForCalculate;
     }
 
-    public void setBankCurrenciesForCalculate(HashMap<String, Double> bankCurrenciesForCalculate) {
+    public void setBankCurrenciesForCalculate(HashMap<String, Double> bankCurrenciesForCalculate)
+    {
         this.bankCurrenciesForCalculate = bankCurrenciesForCalculate;
     }
 
-    public Location getCoordinatesOfUser() {
+    public Location getCoordinatesOfUser()
+    {
         return coordinatesOfUser;
     }
 
-    public void setCoordinatesOfUser(Location coordinatesOfUser) throws IOException {
+    public void setCoordinatesOfUser(Location coordinatesOfUser) throws IOException
+    {
         this.coordinatesOfUser = coordinatesOfUser;
         String coordinates = coordinatesOfUser.getLongitude()+","+coordinatesOfUser.getLatitude();
         yandexParser.setGeocode(coordinates);
@@ -98,11 +118,29 @@ public class User {
         this.setHaveCoordinates(true);
     }
 
-    public boolean isHaveCoordinates() {
+    public boolean isHaveCoordinates()
+    {
         return haveCoordinates;
     }
 
-    public void setHaveCoordinates(boolean haveCoordinates) {
+    public void setHaveCoordinates(boolean haveCoordinates)
+    {
         this.haveCoordinates = haveCoordinates;
+    }
+
+    public long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(long chatId) {
+        this.chatId = chatId;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 }

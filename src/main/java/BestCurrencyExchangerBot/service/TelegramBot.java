@@ -17,6 +17,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
@@ -25,7 +26,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     final BotConfig config;
 
     private final Interface in = new Interface();
-    private HashMap<Long, User> arrayOfUsers = new HashMap<>();
+    private ConcurrentHashMap<Long, User> arrayOfUsers = new ConcurrentHashMap<>();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -54,12 +55,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     user = arrayOfUsers.get(chatId);
                 }
+                user.setFirstName(update.getMessage().getChat().getFirstName());
+                user.setChatId(chatId);
                 user.setCoordinatesOfUser(message.getLocation());
-                sendMessage(chatId, "Запускаю поиск банков в выбранном городе, ожидайте...");
+                sendMessageForCoordinate(chatId, "Запускаю поиск банков в выбранном городе, ожидайте...");
                 user.setTownStructure(TownStructure.getStructure(user.getTown()));
-                sendMessage(chatId, "Список найденных банков с их курсами:");
-                sendMessage(chatId, BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies()));
-                sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard(user.getTownStructure().getBanks()));
+                sendMessageForCoordinate(chatId, "Список найденных банков с их курсами:");
+                sendMessageForCoordinate(chatId, BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies()));
+                sendMessageWithKeyboardForCoordinate(chatId, "Выберите Банк", thirdStepKeyboard(user.getTownStructure().getBanks()));
                 user.setStep("Choose Bank");
             }
             if (update.hasMessage() && message.hasText()) {
@@ -71,225 +74,42 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     user = arrayOfUsers.get(chatId);
                 }
-
-                if (Objects.equals(user.getStep(), "Start")) {
-                    switch (messageText) {
-                        case "/start":
-                            String text = "Введите город, в котором хотите найти обменник валют или выберите геолокацию";
-                            startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                            sendMessageWithKeyboard(chatId, text, secondStepKeyboard());
-                            user.setStep("Choose City");
-                            break;
-                        case "/back":
-                            sendMessage(chatId, "Некуда отспупать, Вы уже на шаге номер 1");
-                            break;
-                        default:
-                            sendMessage(chatId, "Команда не распознана");
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Choose City")) {
-                    switch (messageText) {
-                        case "/back":
-                            user.setStep("Start");
-                            sendMessageWithKeyboard(chatId,
-                                    "Возвращаюсь на шаг назад. (Введите /start)", firstStepKeyboard());
-                            break;
-                        default:
-                            sendMessage(chatId, "Запускаю поиск банков в выбранном городе, ожидайте...");
-                            user.setTown(messageText);
-                            user.setTownStructure(TownStructure.getStructure(user.getTown()));
-
-                            sendMessage(chatId, "Список найденных банков с их курсами:");
-                            sendMessage(chatId, BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies()));
-                            sendMessageWithKeyboard(chatId, "Выберите Банк", thirdStepKeyboard(user.getTownStructure().getBanks()));
-                            user.setStep("Choose Bank");
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Choose Bank")) {
-                    switch (messageText) {
-                        case "/back":
-                            user.setStep("Choose City");
-                            user.setHaveCoordinates(false);
-                            sendMessageWithKeyboard(chatId,
-                                    "Возвращаюсь на шаг назад. (Выбор города)", secondStepKeyboard());
-                            break;
-                        default:
-                            for (String bank : user.getTownStructure().getBanks()) {
-                                if (messageText.equals(bank)) {
-                                    user.setMainBank(bank);
-                                }
-                            }
-                            sendMessageWithKeyboard(chatId, "Выберите, Sell или Buy", fifthStepKeyboard());
-                            user.setStep("Sell or Buy");
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Calculate or Change")) {
+                user.setFirstName(update.getMessage().getChat().getFirstName());
+                user.setChatId(chatId);
+                if (Objects.equals(user.getStep(), "Calculate or Change")) {
                     switch (messageText) {
                         case "/back":
                             user.setStep("Sell or Buy");
-                            sendMessageWithKeyboard(chatId, "Возвращаюсь на шаг назад.", fifthStepKeyboard());
+                            sendMessageWithKeyboardForCoordinate(user.getChatId(), "Возвращаюсь на шаг назад.", fifthStepKeyboard());
                             break;
                         case "Calculate":
-                            sendMessageWithKeyboard(chatId,
+                            sendMessageWithKeyboardForCoordinate(user.getChatId(),
                                     "Введите выражение", seventhStepKeyboard());
                             user.setStep("Expression for Calculate");
                             break;
                         case "Change":
-                            sendMessageWithKeyboard(chatId, "Вы в режиме Обмена", sixthStepKeyboard());
-                            sendMessage(chatId, "Введите валюту котороую хотите перевести");
+                            sendMessageWithKeyboardForCoordinate(user.getChatId(), "Вы в режиме Обмена", sixthStepKeyboard());
+                            sendMessageForCoordinate(user.getChatId(), "Введите валюту котороую хотите перевести");
                             user.setStep("Expression for Change Part1");
                             break;
                         case "Map":
-                            double latitude = 0;
-                            double longitude = 0;
-                            if (user.isHaveCoordinates()) {
-                                int i = 0;
-                                double userLatitude = user.getCoordinatesOfUser().getLatitude();
-                                double userLongitude = user.getCoordinatesOfUser().getLongitude();
-                                double saveLatitude = 0;
-                                double saveLongitude = 0;
-                                double minDistance = 1111110111;
-                                Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
-                                for (String coordinate : coordinates) {
-                                    String[] latAndLong = coordinate.split(",");
-                                    latitude = Double.parseDouble(latAndLong[1]);
-                                    longitude = Double.parseDouble(latAndLong[0]);
-                                    double x = Math.abs(longitude - userLongitude);
-                                    double y = Math.abs(latitude - userLatitude);
-                                    double newDistance = x + y;
+                            double[] location = mapGetLocation(user);
+                            sendLocation(user.getChatId(), location[0], location[1]);
+                            break;
+                        default:
+                            sendMessageForCoordinate(user.getChatId(), "Команда не распознана");
+                            break;
+                    }
+                } else {
+                    ArrayList<SendMessage> messages = ourScenario(user, messageText);
+                    for (SendMessage messageFromScenario : messages) {
+                        try {
+                            execute(messageFromScenario);
+                        } catch (TelegramApiException e) {
+                            log.error("Error occurred:" + e.getMessage());
+                        }
+                    }
 
-                                    i = i + 1;
-                                    if (newDistance < minDistance) {
-                                        minDistance = newDistance;
-                                        saveLatitude = latitude;
-                                        saveLongitude = longitude;
-                                    }
-                                }
-                                sendLocation(chatId, saveLatitude, saveLongitude);
-                            }
-                            else {
-                                Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
-                                for (String coordinate : coordinates) {
-                                    String[] latAndLong = coordinate.split(",");
-                                    latitude = Double.parseDouble(latAndLong[1]);
-                                    longitude = Double.parseDouble(latAndLong[0]);
-                                    break;
-                                }
-                                sendLocation(chatId, latitude, longitude);
-                            }
-                            break;
-                        default:
-                            sendMessage(chatId, "Команда не распознана");
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Sell or Buy")) {
-                    switch (messageText) {
-                        case "Sell":
-                            user.setBankCurrenciesForCalculate(BanksParser.makeDictForCalculate(user.getTownStructure().getBanksWithCurrencies().get(user.getMainBank()), "sell"));
-                            user.setStep("Calculate or Change");
-                            sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
-                            break;
-                        case "Buy":
-                            user.setBankCurrenciesForCalculate(BanksParser.makeDictForCalculate(user.getTownStructure().getBanksWithCurrencies().get(user.getMainBank()), "buy"));
-                            user.setStep("Calculate or Change");
-                            sendMessageWithKeyboard(chatId, "Выберите, Calculate или Change", fourthStepKeyboard());
-                            break;
-                        case "/back":
-                            user.setStep("Choose Bank");
-                            sendMessageWithKeyboard(chatId,
-                                    "Возвращаюсь на шаг назад", thirdStepKeyboard(user.getTownStructure().getBanks()));
-                            break;
-                        default:
-                            sendMessage(chatId, "Команда не распознана");
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Expression for Calculate")) {
-                    switch (messageText) {
-                        case "/help":
-                            sendMessage(chatId, """
-                            Currency conversion. The simplest calculations in different currencies
-    
-                            Arguments:
-                            QuantityOfCurrency = QOC
-                            NameOfCurrency = NOC
-                            Answer - Double variable
-                            Domains of definition
-                            -1.7 * 10^308 <= QOC <= 1.7 * 10^308
-                            -1.7 * 10^308 <= Answer <= 1.7 * 10^308\t
-                            NOC: USD, RUB, EUR
-                            Examples:
-                            IN: QOC NOC + QOC NOC + ... + QOC NOC IN NOC
-                            OUT: Answer
-                            \t
-                            IN: 10 USD + 12 EUR in RUB
-                            OUT: 1192,488 RUB""");
-                            break;
-                        case "/back":
-                            user.setStep("Calculate or Change");
-                            sendMessageWithKeyboard(chatId,
-                                    "Возвращаюсь на шаг назад.", fourthStepKeyboard());
-                            break;
-                        default:
-                            sendMessage(chatId, in.input(messageText, user.getBankCurrenciesForCalculate()));
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Expression for Change Part1")) {
-                    switch (messageText) {
-                        case "EUR":
-                        case "RUB":
-                        case "USD":
-                            user.setFirstCurrency(messageText);
-                            user.setStep("Expression for Change Part2");
-                            sendMessageWithKeyboard(chatId,
-                                    "Введите кол-во единиц данной валюты", eighthStepKeyboard());
-                            break;
-                        case "/back":
-                            user.setStep("Calculate or Change");
-                            sendMessageWithKeyboard(chatId,
-                                    "Возращаюсь на шаг назад", fourthStepKeyboard());
-                            break;
-                        default:
-                            sendMessage(chatId, "Команда не распознана");
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Expression for Change Part2")) {
-                    switch (messageText) {
-                        case "/back":
-                            user.setStep("Expression for Change Part1");
-                            sendMessageWithKeyboard(chatId,
-                                    "Выберите валюту которую хотите обменять", sixthStepKeyboard());
-                            break;
-                        default:
-                            try {
-                                user.setNumberOfFirstCurrency(Integer.parseInt(messageText));
-                                user.setStep("Expression for Change Part3");
-                                sendMessageWithKeyboard(chatId,
-                                        "Выберите валюту в которую переводим", ninthStepKeyboard());
-                            } catch (NumberFormatException e) {
-                                sendMessage(chatId, "Неправильный формат ввода\nВведите натуральное число");
-                            }
-                            break;
-                    }
-                } else if (Objects.equals(user.getStep(), "Expression for Change Part3")) {
-                    switch (messageText) {
-                        case "USD":
-                        case "EUR":
-                        case "RUB":
-                            user.setSecondCurrency(messageText);
-                            user.setStep("Expression for Change Part1");
-                            String expr = user.getNumberOfFirstCurrency() + " " + user.getFirstCurrency() + " in " + user.getSecondCurrency();
-                            sendMessageWithKeyboard(chatId,
-                                    in.input(expr, user.getBankCurrenciesForCalculate()) +
-                                            "\nПовторим? Выберите валюту которую хотите обменять", sixthStepKeyboard());
-                            break;
-                        case "/back":
-                            user.setStep("Expression for Change Part2");
-                            sendMessageWithKeyboard(chatId,
-                                    "Введите кол-во единиц данной валюты", eighthStepKeyboard());
-                        default:
-                            sendMessage(chatId, "Команда не распознана");
-                            break;
-                    }
                 }
             }
         } catch (IOException | ParseException e) {
@@ -405,14 +225,23 @@ public class TelegramBot extends TelegramLongPollingBot {
         return keyboardRows;
     }
 
-    private void startCommandReceived(long chatId, String name){
+    private SendMessage startCommandReceived(long chatId, String name){
 
         String answer = "Привет, " + name +", рады тебя видеть!\n";
         log.info("Replied to user: " + name);
-        sendMessage(chatId, answer);
+        return sendMessage(chatId, answer);
     }
 
-    private void sendMessageWithKeyboard(long chatId, String text, ArrayList<KeyboardRow> keyboardRows){
+    private SendMessage sendMessageWithKeyboard(long chatId, String text, ArrayList<KeyboardRow> keyboardRows){
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(text);
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        keyboardMarkup.setKeyboard(keyboardRows);
+        message.setReplyMarkup(keyboardMarkup);
+        return message;
+    }
+    private void sendMessageWithKeyboardForCoordinate(long chatId, String text, ArrayList<KeyboardRow> keyboardRows){
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
@@ -427,12 +256,16 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-
-    private void sendMessage(long chatId, String textToSend)  {
+    private SendMessage sendMessage(long chatId, String textToSend)  {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
-
+        return message;
+    }
+    private void sendMessageForCoordinate(long chatId, String textToSend)  {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textToSend);
         try{
             execute(message);
         }
@@ -440,6 +273,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred:" + e.getMessage());
         }
     }
+
     private void sendLocation(long chatId, double latitude, double longitude)  {
         SendLocation location = new SendLocation(String.valueOf(chatId), latitude, longitude);
         try{
@@ -448,5 +282,211 @@ public class TelegramBot extends TelegramLongPollingBot {
         catch (TelegramApiException e) {
             log.error("Error occurred:" + e.getMessage());
         }
+    }
+
+    private double[] mapGetLocation(User user) throws IOException, ParseException {
+        double[] result = new double[2];
+        double latitude = 0;
+        double longitude = 0;
+        if (user.isHaveCoordinates()) {
+            double userLatitude = user.getCoordinatesOfUser().getLatitude();
+            double userLongitude = user.getCoordinatesOfUser().getLongitude();
+            double saveLatitude = 0;
+            double saveLongitude = 0;
+            double minDistance = 1111110111;
+            Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
+            for (String coordinate : coordinates) {
+                String[] latAndLong = coordinate.split(",");
+                latitude = Double.parseDouble(latAndLong[1]);
+                longitude = Double.parseDouble(latAndLong[0]);
+                double x = Math.abs(longitude - userLongitude);
+                double y = Math.abs(latitude - userLatitude);
+                double newDistance = x + y;
+                if (newDistance < minDistance) {
+                    minDistance = newDistance;
+                    saveLatitude = latitude;
+                    saveLongitude = longitude;
+                }
+            }
+            result[0] = saveLatitude;
+            result[1] = saveLongitude;
+        }
+        else {
+            Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
+            for (String coordinate : coordinates) {
+                String[] latAndLong = coordinate.split(",");
+                latitude = Double.parseDouble(latAndLong[1]);
+                longitude = Double.parseDouble(latAndLong[0]);
+                break;
+            }
+            result[0] = latitude;
+            result[1] = longitude;
+        }
+        return result;
+
+    }
+    public ArrayList<SendMessage> ourScenario(User user, String messageText) throws Exception {
+        ArrayList<SendMessage> resultMessage = new ArrayList<SendMessage>();
+        if (Objects.equals(user.getStep(), "Start")) {
+            switch (messageText) {
+                case "/start":
+                    String text = "Введите город, в котором хотите найти обменник валют или выберите геолокацию";
+                    resultMessage.add(startCommandReceived(user.getChatId(), user.getFirstName()));
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(), text, secondStepKeyboard()));
+                    user.setStep("Choose City");
+                    break;
+                case "/back":
+                    resultMessage.add(sendMessage(user.getChatId(), "Некуда отспупать, Вы уже на шаге номер 1"));
+                    break;
+                default:
+                    resultMessage.add(sendMessage(user.getChatId(), "Команда не распознана"));
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Choose City")) {
+            switch (messageText) {
+                case "/back":
+                    user.setStep("Start");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Возвращаюсь на шаг назад. (Введите /start)", firstStepKeyboard()));
+                    break;
+                default:
+                    resultMessage.add(sendMessage(user.getChatId(), "Запускаю поиск банков в выбранном городе, ожидайте..."));
+                    user.setTown(messageText);
+                    user.setTownStructure(TownStructure.getStructure(user.getTown()));
+
+                    resultMessage.add(sendMessage(user.getChatId(), "Список найденных банков с их курсами:"));
+                    resultMessage.add(sendMessage(user.getChatId(), BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies())));
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(), "Выберите Банк", thirdStepKeyboard(user.getTownStructure().getBanks())));
+                    user.setStep("Choose Bank");
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Choose Bank")) {
+            switch (messageText) {
+                case "/back":
+                    user.setStep("Choose City");
+                    user.setHaveCoordinates(false);
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Возвращаюсь на шаг назад. (Выбор города)", secondStepKeyboard()));
+                    break;
+                default:
+                    for (String bank : user.getTownStructure().getBanks()) {
+                        if (messageText.equals(bank)) {
+                            user.setMainBank(bank);
+                        }
+                    }
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(), "Выберите, Sell или Buy", fifthStepKeyboard()));
+                    user.setStep("Sell or Buy");
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Sell or Buy")) {
+            switch (messageText) {
+                case "Sell":
+                    user.setBankCurrenciesForCalculate(BanksParser.makeDictForCalculate(user.getTownStructure().getBanksWithCurrencies().get(user.getMainBank()), "sell"));
+                    user.setStep("Calculate or Change");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(), "Выберите, Calculate или Change", fourthStepKeyboard()));
+                    break;
+                case "Buy":
+                    user.setBankCurrenciesForCalculate(BanksParser.makeDictForCalculate(user.getTownStructure().getBanksWithCurrencies().get(user.getMainBank()), "buy"));
+                    user.setStep("Calculate or Change");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(), "Выберите, Calculate или Change", fourthStepKeyboard()));
+                    break;
+                case "/back":
+                    user.setStep("Choose Bank");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Возвращаюсь на шаг назад", thirdStepKeyboard(user.getTownStructure().getBanks())));
+                    break;
+                default:
+                    resultMessage.add(sendMessage(user.getChatId(), "Команда не распознана"));
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Expression for Calculate")) {
+            switch (messageText) {
+                case "/help":
+                    resultMessage.add(sendMessage(user.getChatId(), """
+                            Currency conversion. The simplest calculations in different currencies
+    
+                            Arguments:
+                            QuantityOfCurrency = QOC
+                            NameOfCurrency = NOC
+                            Answer - Double variable
+                            Domains of definition
+                            -1.7 * 10^308 <= QOC <= 1.7 * 10^308
+                            -1.7 * 10^308 <= Answer <= 1.7 * 10^308\t
+                            NOC: USD, RUB, EUR
+                            Examples:
+                            IN: QOC NOC + QOC NOC + ... + QOC NOC IN NOC
+                            OUT: Answer
+                            \t
+                            IN: 10 USD + 12 EUR in RUB
+                            OUT: 1192,488 RUB"""));
+                    break;
+                case "/back":
+                    user.setStep("Calculate or Change");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Возвращаюсь на шаг назад.", fourthStepKeyboard()));
+                    break;
+                default:
+                    resultMessage.add(sendMessage(user.getChatId(), in.input(messageText, user.getBankCurrenciesForCalculate())));
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Expression for Change Part1")) {
+            switch (messageText) {
+                case "EUR":
+                case "RUB":
+                case "USD":
+                    user.setFirstCurrency(messageText);
+                    user.setStep("Expression for Change Part2");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Введите кол-во единиц данной валюты", eighthStepKeyboard()));
+                    break;
+                case "/back":
+                    user.setStep("Calculate or Change");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Возращаюсь на шаг назад", fourthStepKeyboard()));
+                    break;
+                default:
+                    resultMessage.add(sendMessage(user.getChatId(), "Команда не распознана"));
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Expression for Change Part2")) {
+            switch (messageText) {
+                case "/back":
+                    user.setStep("Expression for Change Part1");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Выберите валюту которую хотите обменять", sixthStepKeyboard()));
+                    break;
+                default:
+                    try {
+                        user.setNumberOfFirstCurrency(Integer.parseInt(messageText));
+                        user.setStep("Expression for Change Part3");
+                        resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                                "Выберите валюту в которую переводим", ninthStepKeyboard()));
+                    } catch (NumberFormatException e) {
+                        resultMessage.add(sendMessage(user.getChatId(), "Неправильный формат ввода\nВведите натуральное число"));
+                    }
+                    break;
+            }
+        } else if (Objects.equals(user.getStep(), "Expression for Change Part3")) {
+            switch (messageText) {
+                case "USD":
+                case "EUR":
+                case "RUB":
+                    user.setSecondCurrency(messageText);
+                    user.setStep("Expression for Change Part1");
+                    String expr = user.getNumberOfFirstCurrency() + " " + user.getFirstCurrency() + " in " + user.getSecondCurrency();
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            in.input(expr, user.getBankCurrenciesForCalculate()) +
+                                    "\nПовторим? Выберите валюту которую хотите обменять", sixthStepKeyboard()));
+                    break;
+                case "/back":
+                    user.setStep("Expression for Change Part2");
+                    resultMessage.add(sendMessageWithKeyboard(user.getChatId(),
+                            "Введите кол-во единиц данной валюты", eighthStepKeyboard()));
+                default:
+                    resultMessage.add(sendMessage(user.getChatId(), "Команда не распознана"));
+                    break;
+            }
+        }
+        return resultMessage;
     }
 }
