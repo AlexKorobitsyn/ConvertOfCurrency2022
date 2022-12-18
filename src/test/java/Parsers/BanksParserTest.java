@@ -1,5 +1,7 @@
 package Parsers;
 
+import BestCurrencyExchangerBot.service.BankParserForTest;
+import BestCurrencyExchangerBot.service.IBankParserFactory;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.Test;
@@ -16,17 +18,14 @@ class BanksParserTest {
 
     @Test
     void testGetBankPage() throws IOException {
-        String[] alphabet = {"Евро", "Доллар", "Рубль"};
-        BanksParser bankParser = new BanksParser(alphabet);
+        IBankParserFactory bankParser = new BankParserForTest();
         Document expectedResult = new Document("test");
         assertEquals(expectedResult.baseUri(), bankParser.getBankPage("BankForTest").baseUri());
     }
 
     @Test
     void testBanksWithTheirExchangeRates() throws IOException {
-        String[] alphabet = {"Евро", "Доллар", "Рубль"};
-        BanksParser banksParser = new BanksParser(alphabet);
-
+        IBankParserFactory banksParser = new BankParserForTest();
         Set<String> banks = new HashSet<>();
         banks.add("testBank1");
         banks.add("testBank2");
@@ -134,7 +133,7 @@ class BanksParserTest {
     @Test
     void testParse() {
         String[] alphabet = {"Евро", "Доллар", "Рубль"};
-        BanksParser banksParser = new BanksParser(alphabet);
+        IBankParserFactory banksParser = new BankParserForTest();
         Document testPage = new Document("test");
 
         HashMap<String, HashMap<String, Double>> expectedResult = new HashMap<>();

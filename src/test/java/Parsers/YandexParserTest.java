@@ -11,16 +11,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class YandexParserTest {
 
     @Test
-    void parseTheYandexName() throws IOException {
-        YandexParser yaParser = new YandexParser();
+    void parseTheYandexName() {
+        YandexParserForTest yaParser = new YandexParserForTest();
 
-        yaParser.setTestFlag(true);
         Set<String> expectedResult1 = new HashSet<>();
         expectedResult1.add("ВТБ");
         expectedResult1.add("СберБанк");
         assertEquals(expectedResult1, yaParser.ParseTheYandexName(false));
 
-        yaParser.setTestFlag(true);
         Set<String> expectedResult2 = new HashSet<>();
         expectedResult2.add("60.4345");
         expectedResult2.add("59.5930");
@@ -28,12 +26,9 @@ class YandexParserTest {
     }
 
     @Test
-    void testTakeTheTown() throws IOException {
-        YandexParser yaParser = new YandexParser();
-        yaParser.setTestFlag(true);
-
+    void testTakeTheTown() {
+        YandexParserForTest yaParser = new YandexParserForTest();
         String expectedResult = "TestTown";
-
         assertEquals(expectedResult, yaParser.takeTheTown());
     }
 }

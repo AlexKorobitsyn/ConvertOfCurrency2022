@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class InputSystemTest {
 
     @Test
-    void testIinputProcessor() throws Exception {
+    void testInputProcessor() throws Exception {
         InputSystem inputSystem = new InputSystem();
 
         String expression1 = "10     USD - 9 USD in   RUB";

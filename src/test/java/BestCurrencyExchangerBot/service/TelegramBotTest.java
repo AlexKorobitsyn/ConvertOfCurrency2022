@@ -1,10 +1,8 @@
 package BestCurrencyExchangerBot.service;
 import BestCurrencyExchangerBot.config.BotConfig;
-import BestCurrencyExchangerBot.service.User;
 import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,7 +13,9 @@ class TelegramBotTest {
     void testOurScenario() throws Exception {
         BotConfig config = new BotConfig();
         User testUser = new User();
+        ITownStructureFactory factory = new TownStructureForTest();
         TelegramBot telegramBot = new TelegramBot(config);
+        telegramBot.setITownStructureFactory(factory);
         String message1 = "/start";
         ArrayList<SendMessage> arrayListOfAnswers1 = telegramBot.ourScenario(testUser, message1);
         assertEquals("Choose City", testUser.getStep());

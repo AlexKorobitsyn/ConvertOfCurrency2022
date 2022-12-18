@@ -25,13 +25,22 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     final BotConfig config;
 
+    private ITownStructureFactory townStructureFactory;
+
+    private IBankParserFactory parserFactory;
+
     private final Interface in = new Interface();
     private ConcurrentHashMap<Long, User> arrayOfUsers = new ConcurrentHashMap<>();
 
-    public TelegramBot(BotConfig config) {
+    public TelegramBot(BotConfig config) throws IOException {
         this.config = config;
     }
-
+    public void setITownStructureFactory (ITownStructureFactory factory){
+        this.townStructureFactory = factory;
+    }
+    public void setParserFactory(IBankParserFactory parserFactory) {
+        this.parserFactory = parserFactory;
+    }
     @Override
     public String getBotUsername() {
         return config.getBotName();
@@ -44,6 +53,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         User user;
+        townStructureFactory = new TownStructure();
         try {
             Message message = update.getMessage();
             if(update.hasMessage() && message.hasLocation())
@@ -59,7 +69,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 user.setChatId(chatId);
                 user.setCoordinatesOfUser(message.getLocation());
                 sendMessageForCoordinate(chatId, "Запускаю поиск банков в выбранном городе, ожидайте...");
-                user.setTownStructure(TownStructure.getStructure(user.getTown()));
+                user.setTownStructure(townStructureFactory.buildTownStructure(user.getTown()));
                 sendMessageForCoordinate(chatId, "Список найденных банков с их курсами:");
                 sendMessageForCoordinate(chatId, BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies()));
                 sendMessageWithKeyboardForCoordinate(chatId, "Выберите Банк", thirdStepKeyboard(user.getTownStructure().getBanks()));
@@ -294,7 +304,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             double saveLatitude = 0;
             double saveLongitude = 0;
             double minDistance = 1111110111;
-            Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
+            Set<String> coordinates = townStructureFactory.getCoordinates(user.getMainBank(), user.getTown());
             for (String coordinate : coordinates) {
                 String[] latAndLong = coordinate.split(",");
                 latitude = Double.parseDouble(latAndLong[1]);
@@ -312,7 +322,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             result[1] = saveLongitude;
         }
         else {
-            Set<String> coordinates = TownStructure.getCoordinates(user.getMainBank(), user.getTown());
+            Set<String> coordinates = townStructureFactory.getCoordinates(user.getMainBank(), user.getTown());
             for (String coordinate : coordinates) {
                 String[] latAndLong = coordinate.split(",");
                 latitude = Double.parseDouble(latAndLong[1]);
@@ -330,7 +340,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (Objects.equals(user.getStep(), "Start")) {
             switch (messageText) {
                 case "/start":
-                    String text = "Введите город, в котором хотите найти обменник валют или выберите геолокацию";
+                    String text = "Привет, введите город";
+//                    String text = "Введите город, в котором хотите найти обменник валют или выберите геолокацию";
                     resultMessage.add(startCommandReceived(user.getChatId(), user.getFirstName()));
                     resultMessage.add(sendMessageWithKeyboard(user.getChatId(), text, secondStepKeyboard()));
                     user.setStep("Choose City");
@@ -352,7 +363,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 default:
                     resultMessage.add(sendMessage(user.getChatId(), "Запускаю поиск банков в выбранном городе, ожидайте..."));
                     user.setTown(messageText);
-                    user.setTownStructure(TownStructure.getStructure(user.getTown()));
+                    user.setTownStructure(townStructureFactory.buildTownStructure(user.getTown()));
 
                     resultMessage.add(sendMessage(user.getChatId(), "Список найденных банков с их курсами:"));
                     resultMessage.add(sendMessage(user.getChatId(), BanksParser.makeOutputStr(user.getTownStructure().getBanksWithCurrencies())));

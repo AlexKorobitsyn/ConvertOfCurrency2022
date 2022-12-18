@@ -1,8 +1,10 @@
 package Parsers;
 
+import BestCurrencyExchangerBot.service.IBankParserFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -12,7 +14,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class BanksParser {
+public class BanksParser implements IBankParserFactory {
     private final HashMap<String, String> bankAndRelatedUrl; // Словарь {Банк: URL}
     private final String[] alphabet; // Массив валют
     public BanksParser(String[] alphabet) {
@@ -27,35 +29,16 @@ public class BanksParser {
         bankAndRelatedUrl.put("МТС банк", "https://ru.myfin.by/bank/mts-bank/currency");
         this.alphabet = alphabet;
     }
-
+    @Override
     public Document getBankPage(String bankName) throws IOException {
-        if (Objects.equals(bankName, "BankForTest")){ // заглушка
-            return new Document("test");
-        }
         String url = bankAndRelatedUrl.get(bankName);
         return Jsoup.parse(new URL(url), 3000);
     }
 
+    @Override
     public HashMap<String, HashMap<String, HashMap<String, Double>>> banksWithTheirExchangeRates(Set<String> banks) throws IOException {
         HashMap<String, HashMap<String, HashMap<String, Double>>> resultDict = new HashMap<>();
         for (String bank: banks) {
-            if (bank.startsWith("testBank")) { // заглушка
-                HashMap<String, HashMap<String, Double>> testBankWithCurrencies = new HashMap<>();
-                HashMap<String, Double> sellBuyUSD = new HashMap<>();
-                sellBuyUSD.put("sell", 69.0);
-                sellBuyUSD.put("buy", 73.0);
-                HashMap<String, Double> sellBuyEUR = new HashMap<>();
-                sellBuyEUR.put("sell", 70.0);
-                sellBuyEUR.put("buy", 85.0);
-                HashMap<String, Double> sellBuyRUB = new HashMap<>();
-                sellBuyRUB.put("sell", 1.0);
-                sellBuyRUB.put("buy", 1.0);
-                testBankWithCurrencies.put("EUR", sellBuyEUR);
-                testBankWithCurrencies.put("USD", sellBuyUSD);
-                testBankWithCurrencies.put("RUB", sellBuyRUB);
-                resultDict.put(bank, testBankWithCurrencies);
-            }
-
             if (bankAndRelatedUrl.containsKey(bank)){
                 Document page = getBankPage(bank);
                 resultDict.put(bank,parse(page));
@@ -63,26 +46,9 @@ public class BanksParser {
         }
         return resultDict;
     }
+    @Override
     public HashMap<String, HashMap<String, Double>> parse(Document page){
         HashMap<String, HashMap<String, Double>> dictWithCurrencyAndValues = new HashMap<>();
-
-        if (Objects.equals(page.baseUri(), "test")) { //заглушка
-            HashMap<String, HashMap<String, Double>> bankWithCurrencies = new HashMap<>();
-            HashMap<String, Double> sellBuyForUSD = new HashMap<>();
-            sellBuyForUSD.put("sell", 69.0);
-            sellBuyForUSD.put("buy", 73.0);
-            HashMap<String, Double> sellBuyForEUR = new HashMap<>();
-            sellBuyForEUR.put("sell", 70.0);
-            sellBuyForEUR.put("buy", 85.0);
-            HashMap<String, Double> sellBuyForRUB = new HashMap<>();
-            sellBuyForRUB.put("sell", 1.0);
-            sellBuyForRUB.put("buy", 1.0);
-            bankWithCurrencies.put("EUR", sellBuyForEUR);
-            bankWithCurrencies.put("USD", sellBuyForUSD);
-            bankWithCurrencies.put("RUB", sellBuyForRUB);
-
-            return bankWithCurrencies;
-        }
 
         Element tableFirst = page.select("table[class=table-best white_bg]").first(); //выборка
         String content = tableFirst.text();

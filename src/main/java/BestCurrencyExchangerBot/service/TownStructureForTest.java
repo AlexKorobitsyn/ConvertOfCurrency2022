@@ -1,22 +1,16 @@
 package BestCurrencyExchangerBot.service;
 
-import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class TownStructureTest {
-
-    @org.junit.jupiter.api.Test
-    void testGetStructure() throws IOException {
-        TownStructure expectedTownStructure = new TownStructure();
-        expectedTownStructure.setBanks(new HashSet<>(List.of(new String[]{"Sberbank", "VTB"})));
+public class TownStructureForTest implements ITownStructureFactory {
+    @Override
+    public TownStructure buildTownStructure(String town) {
+        TownStructure townStructure = new TownStructure();
+        townStructure.setBanks(new HashSet<>(List.of(new String[]{"Sberbank", "VTB"})));
         HashMap<String, HashMap<String, HashMap<String, Double>>> banksWithCurrencies = new HashMap<>();
 
         HashMap<String, Double> sellAndBuyForSberbankUSD = new HashMap<>();
@@ -50,22 +44,17 @@ class TownStructureTest {
         banksWithCurrencies.put("Sberbank", currenciesAndValuesForSberbank);
         banksWithCurrencies.put("VTB", currenciesAndValuesForVTB);
 
-        expectedTownStructure.setBanksWithCurrencies(banksWithCurrencies);
+        townStructure.setBanksWithCurrencies(banksWithCurrencies);
 
-        ITownStructureFactory factory = new TownStructureForTest();
-
-        assertEquals(expectedTownStructure.getBanks(), factory.buildTownStructure("London").getBanks());
-        assertEquals(expectedTownStructure.getBanksWithCurrencies(), factory.buildTownStructure("London").getBanksWithCurrencies());
+        return townStructure;
     }
 
-    @Test
-    void testGetCoordinates() throws IOException {
-        Set<String> ExpectedCoordinates = new HashSet<>();
-        ExpectedCoordinates.add("63.340774,61.314464");
-        ExpectedCoordinates.add("63.323504,61.312341");
-        ExpectedCoordinates.add("63.343912,61.31457");
-
-        ITownStructureFactory factory = new TownStructureForTest();
-        assertEquals(ExpectedCoordinates, factory.getCoordinates("Сбербанк", "London"));
+    @Override
+    public Set<String> getCoordinates(String mainBank, String town) throws IOException {
+        Set<String> coordinates = new HashSet<>();
+        coordinates.add("63.340774,61.314464");
+        coordinates.add("63.323504,61.312341");
+        coordinates.add("63.343912,61.31457");
+        return coordinates;
     }
 }
