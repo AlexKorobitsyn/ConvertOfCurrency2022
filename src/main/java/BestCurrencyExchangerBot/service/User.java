@@ -10,6 +10,8 @@ public class User {
     private String firstName;
     private long chatId;
     private Location coordinatesOfUser = new Location();
+    private double[] coordinatesOfBank = new double[2];
+    private boolean haveCoordinatesOfBank = false;
     private boolean haveCoordinates = false;
     private String town = "";
     private TownStructure townStructure;
@@ -142,5 +144,21 @@ public class User {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public double[] getCoordinatesOfBank() {
+        return coordinatesOfBank;
+    }
+
+    public void setCoordinatesOfBank(double[] coordinatesOfBank) {
+        this.coordinatesOfBank = coordinatesOfBank;
+    }
+
+    public boolean isHaveCoordinatesOfBank() {
+        return haveCoordinatesOfBank;
+    }
+
+    public void setHaveCoordinatesOfBank(boolean haveCoordinatesOfBank) {
+        this.haveCoordinatesOfBank = haveCoordinatesOfBank;
     }
 }

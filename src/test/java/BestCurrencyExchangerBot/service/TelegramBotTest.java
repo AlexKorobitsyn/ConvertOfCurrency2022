@@ -49,5 +49,14 @@ class TelegramBotTest {
         assertEquals("Sell or Buy", testUser.getStep());
         telegramBot.ourScenario(testUser, "Sell");
         assertEquals("Calculate or Change", testUser.getStep());
+        telegramBot.ourScenario(testUser, "Map");
+        assertEquals(true, testUser.isHaveCoordinatesOfBank());
+        telegramBot.ourScenario(testUser, "Calculate");
+        assertEquals("Expression for Calculate", testUser.getStep());
+        telegramBot.ourScenario(testUser, message3);
+        telegramBot.ourScenario(testUser, "Change");
+        assertEquals("Expression for Change Part1", testUser.getStep());
+        telegramBot.ourScenario(testUser, "EUR");
+        assertEquals("Expression for Change Part2", testUser.getStep());
     }
 }
